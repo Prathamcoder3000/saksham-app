@@ -1,8 +1,37 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-class MedicineTrackerScreen extends StatelessWidget {
+class MedicineTrackerScreen extends StatefulWidget {
   const MedicineTrackerScreen({super.key});
+
+  @override
+  State<MedicineTrackerScreen> createState() =>
+      _MedicineTrackerScreenState();
+}
+
+class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
+
+  List<Map<String, String>> medicines = [
+    {"name": "Lisinopril", "status": "taken"},
+    {"name": "Donepezil", "status": "pending"},
+    {"name": "Vitamin D3", "status": "upcoming"},
+    {"name": "Aspirin", "status": "missed"},
+  ];
+
+  void markAsTaken(int index) {
+    setState(() {
+      medicines[index]["status"] = "taken";
+    });
+  }
+
+  int get taken =>
+      medicines.where((m) => m["status"] == "taken").length;
+
+  int get pending =>
+      medicines.where((m) => m["status"] == "pending").length;
+
+  int get missed =>
+      medicines.where((m) => m["status"] == "missed").length;
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +41,7 @@ class MedicineTrackerScreen extends StatelessWidget {
       body: Stack(
         children: [
 
-          // 🔝 APP BAR
+          // 🔝 HEADER
           Positioned(
             top: 0,
             left: 0,
@@ -28,10 +57,13 @@ class MedicineTrackerScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.arrow_back, color: Colors.blue),
-                          SizedBox(width: 10),
-                          Text(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Icon(Icons.arrow_back, color: Colors.blue),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
                             "Medicine Tracker",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -48,7 +80,7 @@ class MedicineTrackerScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔹 MAIN
+          // 🔹 MAIN CONTENT
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 110, 16, 120),
             child: SingleChildScrollView(
@@ -56,39 +88,22 @@ class MedicineTrackerScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // 🗓 DATE
+                  // DATE
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: const [
-                          Text(
-                            "TODAY",
-                            style: TextStyle(
-                              fontSize: 12,
-                              letterSpacing: 2,
-                              color: Colors.grey,
-                            ),
-                          ),
+                          Text("TODAY", style: TextStyle(color: Colors.grey)),
                           SizedBox(height: 4),
-                          Text(
-                            "Monday, 24 Oct",
-                            style: TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          Text("Monday, 24 Oct",
+                              style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold)),
                         ],
                       ),
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Icon(Icons.medical_services, color: Colors.blue),
-                      ),
+                      const Icon(Icons.medical_services, color: Colors.blue),
                     ],
                   ),
 
@@ -96,71 +111,56 @@ class MedicineTrackerScreen extends StatelessWidget {
 
                   // 📊 STATS
                   Row(
-                    children: const [
-                      Expanded(child: _stat("4", "Taken", Colors.green)),
-                      SizedBox(width: 10),
-                      Expanded(child: _stat("2", "Pending", Colors.orange)),
-                      SizedBox(width: 10),
-                      Expanded(child: _stat("0", "Missed", Colors.red)),
+                    children: [
+                      Expanded(child: _stat("$taken", "Taken", Colors.green)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _stat("$pending", "Pending", Colors.orange)),
+                      const SizedBox(width: 10),
+                      Expanded(child: _stat("$missed", "Missed", Colors.red)),
                     ],
                   ),
 
                   const SizedBox(height: 30),
 
-                  const Text(
-                    "SCHEDULE",
-                    style: TextStyle(
-                      fontSize: 12,
-                      letterSpacing: 2,
-                      color: Colors.grey,
-                    ),
-                  ),
+                  const Text("SCHEDULE",
+                      style: TextStyle(color: Colors.grey)),
 
                   const SizedBox(height: 15),
 
-                  // 💊 GIVEN
-                  _card(
-                    title: "Lisinopril",
-                    subtitle: "10mg — Before Breakfast",
-                    time: "08:00 AM",
-                    status: "GIVEN",
-                    color: Colors.green,
-                  ),
+                  // GIVEN
+                  _card("Lisinopril", "10mg — Before Breakfast", "08:00 AM", "GIVEN", Colors.green),
 
                   const SizedBox(height: 15),
 
-                  // ⏳ PENDING WITH BUTTON
-                  _pendingCard(),
+                  // PENDING
+                  _pendingCard(1),
 
                   const SizedBox(height: 15),
 
-                  // ⏱ UPCOMING
-                  _card(
-                    title: "Vitamin D3",
-                    subtitle: "1000 IU — Once Daily",
-                    time: "06:00 PM",
-                    status: "UPCOMING",
-                    color: Colors.grey,
-                  ),
+                  // UPCOMING
+                  _card("Vitamin D3", "1000 IU — Once Daily", "06:00 PM", "UPCOMING", Colors.grey),
 
                   const SizedBox(height: 15),
 
-                  // ❌ MISSED
+                  // MISSED
                   _missedCard(),
 
                   const SizedBox(height: 30),
 
-                  // ➕ ADD PRESCRIPTION
-                  Container(
-                    height: 60,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey.shade300, width: 2),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Center(
-                      child: Text(
-                        "+ Add Prescription",
-                        style: TextStyle(fontWeight: FontWeight.w600),
+                  // ADD PRESCRIPTION
+                  GestureDetector(
+                    onTap: () {
+                      print("Add Prescription Clicked");
+                    },
+                    child: Container(
+                      height: 60,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey.shade300, width: 2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: const Center(
+                        child: Text("+ Add Prescription",
+                            style: TextStyle(fontWeight: FontWeight.w600)),
                       ),
                     ),
                   ),
@@ -169,7 +169,7 @@ class MedicineTrackerScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔻 BOTTOM NAV
+          // 🔻 NAV BAR
           Positioned(
             bottom: 0,
             left: 0,
@@ -198,13 +198,57 @@ class MedicineTrackerScreen extends StatelessWidget {
       // 🚨 FAB
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
-        onPressed: () {},
+        onPressed: () {
+          print("Emergency Clicked");
+        },
         child: const Icon(Icons.emergency),
+      ),
+    );
+  }
+
+  // 🔹 PENDING CARD
+  Widget _pendingCard(int index) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: const [
+              Text("Donepezil", style: TextStyle(fontWeight: FontWeight.bold)),
+              Text("12:30 PM", style: TextStyle(color: Colors.blue)),
+            ],
+          ),
+          const SizedBox(height: 10),
+          GestureDetector(
+            onTap: () => markAsTaken(index),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Colors.blue, Colors.teal],
+                ),
+                borderRadius: BorderRadius.circular(30),
+              ),
+              child: const Center(
+                child: Text("✔ Mark as Taken",
+                    style: TextStyle(color: Colors.white)),
+              ),
+            ),
+          )
+        ],
       ),
     );
   }
 }
 
+// 🔹 STAT
 class _stat extends StatelessWidget {
   final String count, label;
   final Color color;
@@ -223,21 +267,16 @@ class _stat extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(count, style: TextStyle(color: color, fontSize: 18)),
-          Text(label, style: const TextStyle(fontSize: 12)),
+          Text(count, style: TextStyle(color: color)),
+          Text(label),
         ],
       ),
     );
   }
 }
 
-Widget _card({
-  required String title,
-  required String subtitle,
-  required String time,
-  required String status,
-  required Color color,
-}) {
+// 🔹 NORMAL CARD
+Widget _card(String title, String subtitle, String time, String status, Color color) {
   return Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -255,7 +294,6 @@ Widget _card({
           ],
         ),
         Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(status, style: TextStyle(color: color)),
             Text(time),
@@ -266,45 +304,7 @@ Widget _card({
   );
 }
 
-Widget _pendingCard() {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-      border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
-    ),
-    child: Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            Text("Donepezil", style: TextStyle(fontWeight: FontWeight.bold)),
-            Text("12:30 PM", style: TextStyle(color: Colors.blue)),
-          ],
-        ),
-        const SizedBox(height: 10),
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(12),
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Colors.blue, Colors.teal],
-            ),
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: const Center(
-            child: Text(
-              "✔ Mark as Taken",
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        )
-      ],
-    ),
-  );
-}
-
+// 🔹 MISSED CARD
 Widget _missedCard() {
   return Container(
     padding: const EdgeInsets.all(16),
@@ -319,13 +319,14 @@ Widget _missedCard() {
         Text("81mg — Blood Thinner"),
         SizedBox(height: 6),
         Text("Missed at 07:00 AM", style: TextStyle(color: Colors.red)),
-        Text("⚠ Alert: Dose missed over 2 hours ago.",
+        Text("⚠ Alert: Dose missed",
             style: TextStyle(color: Colors.red)),
       ],
     ),
   );
 }
 
+// 🔹 NAV
 class _nav extends StatelessWidget {
   final IconData icon;
   final String label;

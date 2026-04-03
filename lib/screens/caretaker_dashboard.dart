@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-
+import 'daily_checklist_screen.dart';
+import 'medicine_tracker.dart';
+import 'emergency_sos.dart';
+import 'caretaker_resident_list.dart';
 class CaretakerDashboard extends StatelessWidget {
   const CaretakerDashboard({super.key});
 
@@ -84,13 +87,21 @@ class CaretakerDashboard extends StatelessWidget {
             const SizedBox(height: 30),
 
             // 🧩 CARDS
-            _tile(
+           _tile(
               bgColor: surfaceWhite,
               iconBg: const Color(0xFFDBE1FF),
               iconColor: primary,
               icon: Icons.group,
               title: "Residents",
               subtitle: "View and manage active resident profiles",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CaretakerResidentListScreen(),
+                  ),
+                );
+              },
             ),
 
             _tile(
@@ -100,6 +111,14 @@ class CaretakerDashboard extends StatelessWidget {
               icon: Icons.medication,
               title: "Medication",
               subtitle: "Track and confirm medicine administration",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MedicineTrackerScreen(),
+                  ),
+                );
+              },
             ),
 
             _tile(
@@ -109,32 +128,49 @@ class CaretakerDashboard extends StatelessWidget {
               icon: Icons.check_circle,
               title: "Daily Tasks",
               subtitle: "Standard care routines and hygiene checks",
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DailyChecklistScreen(),
+                  ),
+                );
+              },
             ),
 
             // 🚨 SOS (EXACT SHADOW + GRADIENT)
-            Container(
-              margin: const EdgeInsets.only(bottom: 18),
-              padding: const EdgeInsets.all(22),
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [primaryContainer, Color(0xFF14B8A6)],
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => EmergencySOSScreen(),
+                  ),
+                );
+              },
+              child: Container(
+                margin: const EdgeInsets.only(bottom: 18),
+                padding: const EdgeInsets.all(22),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [primaryContainer, Color(0xFF14B8A6)],
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: const [
+                    BoxShadow(
+                      color: Color.fromRGBO(37, 99, 235, 0.25),
+                      blurRadius: 32,
+                      offset: Offset(0, 8),
+                    )
+                  ],
                 ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromRGBO(37, 99, 235, 0.25),
-                    blurRadius: 32,
-                    offset: Offset(0, 8),
-                  )
-                ],
-              ),
-              child: Row(
-                children: [
+                child: Row(
+                  children: [
                   Container(
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Center(
@@ -175,6 +211,7 @@ class CaretakerDashboard extends StatelessWidget {
                 ],
               ),
             ),
+          ),
 
             const SizedBox(height: 24),
 
@@ -220,7 +257,7 @@ class CaretakerDashboard extends StatelessWidget {
         height: 90,
         padding: const EdgeInsets.only(bottom: 20),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.85),
+          color: Colors.white.withValues(alpha: 0.85),
           borderRadius:
               const BorderRadius.vertical(top: Radius.circular(30)),
           boxShadow: const [
@@ -234,10 +271,10 @@ class CaretakerDashboard extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: const [
-            _navItem(Icons.home, "Home", true),
-            _navItem(Icons.monitor_heart, "Vitals", false),
-            _navItem(Icons.medical_services, "Care", false),
-            _navItem(Icons.person, "Profile", false),
+            NavItem(Icons.home, "Home", true),
+            NavItem(Icons.monitor_heart, "Vitals", false),
+            NavItem(Icons.medical_services, "Care", false),
+            NavItem(Icons.person, "Profile", false),
           ],
         ),
       ),
@@ -245,56 +282,53 @@ class CaretakerDashboard extends StatelessWidget {
   }
 
   // 🔹 TILE EXACT
-  Widget _tile({
-    required Color bgColor,
-    required Color iconBg,
-    required Color iconColor,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-  }) {
-    return Container(
+Widget _tile({
+  required Color bgColor,
+  required Color iconBg,
+  required Color iconColor,
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  VoidCallback? onTap,
+}) {
+  return GestureDetector(
+    onTap: onTap,
+    child: Container(
       margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
         borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
-          BoxShadow(
-            color: Color.fromRGBO(0, 74, 198, 0.04),
-            blurRadius: 32,
-          )
-        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 56,
-            height: 56,
+            padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
               color: iconBg,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: iconColor),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: 14),
           Expanded(
             child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w600)),
-                  const SizedBox(height: 4),
-                  Text(subtitle,
-                      style: const TextStyle(
-                          color: Color(0xFF434655), fontSize: 14)),
-                ]),
-          )
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title,
+                    style: const TextStyle(
+                        fontWeight: FontWeight.w600)),
+                const SizedBox(height: 4),
+                Text(subtitle,
+                    style: const TextStyle(color: Colors.grey)),
+              ],
+            ),
+          ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _dotNote(String text, Color color) {
     return Padding(
@@ -314,12 +348,12 @@ class CaretakerDashboard extends StatelessWidget {
   }
 }
 
-class _navItem extends StatelessWidget {
+class NavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool active;
 
-  const _navItem(this.icon, this.label, this.active);
+  const NavItem(this.icon, this.label, this.active, {super.key});
 
   @override
   Widget build(BuildContext context) {
