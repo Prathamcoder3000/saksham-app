@@ -8,7 +8,7 @@
 
 # 🏥 Saksham App
 
-**A multi-role healthcare & caretaker management mobile application**
+**A comprehensive multi-role healthcare & caretaker management mobile application**
 
 *Empowering administrators, caretakers, and families to manage healthcare activities — all in one place.*
 
@@ -26,22 +26,48 @@
 | Admin Dashboard | ✅ Done |
 | Resident Management (Add / Edit / View / Profile) | ✅ Done |
 | Staff Management (Add / View) | ✅ Done |
-| Reports Module | 🚧 In Progress |
-| Caretaker Dashboard | 🚧 In Progress |
-| Family Dashboard | 🚧 In Progress |
+| Caretaker Dashboard | ✅ Done |
+| Medicine Tracker | ✅ Done |
+| Daily Checklist | ✅ Done |
+| Emergency SOS | ✅ Done |
+| Family Dashboard | ✅ Done |
+| Reports Module | ✅ Done |
+| Task Management | ✅ Done |
 | Backend Integration (Node.js + MongoDB) | ⏳ Planned |
 | JWT Authentication | ⏳ Planned |
 | Real-time Notifications | ⏳ Planned |
+| Image Upload | ⏳ Planned |
+
+---
 
 ---
 
 ## 📱 App Flow
 
 ```
-Splash Screen → Role Selection → Login → Loading → Dashboard
+Splash Screen → Login → Role Selection → Dashboard
 ```
 
-Each role lands in its own dedicated dashboard with tailored functionality.
+Each role lands in its own dedicated dashboard with tailored functionality:
+
+- **Admin**: Full management access to residents, staff, reports, and tasks
+- **Caretaker**: Focus on daily care activities, medicine tracking, and emergency response
+- **Family**: Health monitoring and resident well-being updates
+
+---
+
+## 🚀 Current Development Status
+
+**Frontend Complete** ✅
+- All core features implemented and functional
+- Multi-platform support (Android, iOS, Web, Desktop)
+- Pixel-perfect UI with custom design system
+- Comprehensive user flows for all three roles
+
+**Backend Integration** ⏳
+- Ready for API integration
+- Data models defined
+- Authentication system planned
 
 ---
 
@@ -56,17 +82,21 @@ Each role lands in its own dedicated dashboard with tailored functionality.
 - **Staff Management**
   - View all staff members
   - Add new staff via FAB
-- **Reports** — *(In Progress)*
+- **Reports** — Detailed analytics and reports
+- **Task Management** — Assign and track tasks
 
-### 👩‍⚕️ Caretaker Module *(Upcoming)*
-- Medicine tracker
-- Daily checklist
-- Emergency alerts
+### 👩‍⚕️ Caretaker Module
+- **Dashboard** — Caretaker-specific overview
+- **Medicine Tracker** — Track medication schedules and administration
+- **Daily Checklist** — Daily care routine checklists
+- **Emergency SOS** — Quick emergency response system
+- **Resident Management** — View and update resident information
 
-### 👨‍👩‍👧 Family Module *(Upcoming)*
-- Resident overview
-- Health updates
-- Notifications
+### 👨‍👩‍👧 Family Module
+- **Dashboard** — Family member overview
+- **Health Snapshot** — Real-time health metrics and updates
+- **Resident Monitoring** — Track resident well-being
+- **Notifications** — Health alerts and updates
 
 ---
 
@@ -87,6 +117,16 @@ Each role lands in its own dedicated dashboard with tailored functionality.
 - **Flutter** — Cross-platform mobile framework
 - **Dart** — Programming language
 - **Material UI** — Component library
+- **Custom Fonts** — Lexend font family
+- **Percent Indicator** — Progress indicators library
+
+### Platform Support
+- **Android** — Native Android apps
+- **iOS** — Native iOS apps
+- **Web** — Progressive Web App
+- **Windows** — Desktop application
+- **Linux** — Desktop application
+- **macOS** — Desktop application
 
 ### Backend *(Planned)*
 - **Node.js** + **Express** — REST API server
@@ -99,23 +139,33 @@ Each role lands in its own dedicated dashboard with tailored functionality.
 
 ```
 lib/
-├── main.dart
-└── screens/
-    ├── splash_screen.dart
-    ├── role_selection.dart
-    ├── login_screen.dart
-    ├── loading_screen.dart
-    ├── dashboard_screen.dart          # Admin
-    ├── resident_list.dart
-    ├── resident_profile.dart
-    ├── add_resident.dart
-    ├── edit_resident.dart
-    ├── manage_staff.dart
-    ├── add_staff_screen.dart
-    ├── reports_screen.dart
-    ├── detailed_report.dart
-    ├── caretaker_dashboard.dart       # Caretaker
-    └── family_dashboard.dart          # Family
+├── main.dart                          # App entry point
+├── models/
+│   └── medicine.dart                  # Medicine data model
+├── screens/
+│   ├── login_screen.dart              # Authentication screen
+│   ├── loading_screen.dart            # Loading indicator
+│   ├── forgot_password.dart           # Password recovery
+│   ├── dashboard_screen.dart          # Admin dashboard
+│   ├── resident_list.dart             # Resident list view
+│   ├── resident_profile.dart          # Resident profile details
+│   ├── add_resident.dart              # Add new resident
+│   ├── edit_resident.dart             # Edit resident info
+│   ├── manage_staff.dart              # Staff management
+│   ├── add_staff_screen.dart          # Add new staff
+│   ├── add_task_screen.dart           # Task assignment
+│   ├── reports_screen.dart            # Reports overview
+│   ├── detailed_report.dart           # Detailed analytics
+│   ├── caretaker_dashboard.dart       # Caretaker dashboard
+│   ├── caretaker_resident_list.dart   # Caretaker resident view
+│   ├── caretaker_resident_profile.dart # Caretaker resident profile
+│   ├── caretaker_edit_resident.dart   # Caretaker edit resident
+│   ├── medicine_tracker.dart          # Medication management
+│   ├── daily_checklist_screen.dart    # Daily care checklist
+│   ├── emergency_sos.dart             # Emergency response
+│   └── family_dashboard.dart          # Family dashboard
+├── utils/                             # Utility functions
+└── widgets/                           # Reusable UI components
 ```
 
 ---
@@ -259,28 +309,64 @@ flutter devices          # lists available devices
 flutter run -d <device_id>
 ```
 
-To build a release APK:
+#### Platform-Specific Commands
 
+**Android APK:**
 ```bash
 flutter build apk --release
 ```
+*Output:* `build/app/outputs/flutter-apk/app-release.apk`
 
-The APK will be generated at: `build/app/outputs/flutter-apk/app-release.apk`
+**iOS (macOS only):**
+```bash
+flutter build ios --release
+```
+
+**Web:**
+```bash
+flutter run -d chrome
+# or
+flutter build web
+```
+
+**Windows (Windows only):**
+```bash
+flutter run -d windows
+```
+
+**Linux (Linux only):**
+```bash
+flutter run -d linux
+```
+
+**macOS (macOS only):**
+```bash
+flutter run -d macos
+```
 
 ---
 
 ## 🗺️ Roadmap
 
 - [x] Admin UI & navigation flow
-- [ ] Reports module (in progress)
-- [ ] Caretaker module
-- [ ] Family module
+- [x] Resident management system
+- [x] Staff management system
+- [x] Caretaker dashboard & features
+- [x] Medicine tracking system
+- [x] Daily checklist functionality
+- [x] Emergency SOS system
+- [x] Family dashboard
+- [x] Reports & analytics
+- [x] Task management
+- [x] Multi-platform deployment
 - [ ] Backend REST API (Node.js + Express)
 - [ ] MongoDB database integration
 - [ ] JWT authentication system
 - [ ] Role-based access control
 - [ ] Real-time notifications
 - [ ] Image upload functionality
+- [ ] Push notifications
+- [ ] Offline data synchronization
 
 ---
 
@@ -298,7 +384,7 @@ Contributions are welcome!
 
 ## 📄 License
 
-This project is developed for **educational and academic purposes**.
+This project is developed for **educational and academic purposes**. All rights reserved.
 
 ---
 
@@ -311,5 +397,7 @@ This project is developed for **educational and academic purposes**.
 [GitHub: @Prathamcoder3000](https://github.com/Prathamcoder3000)
 
 *Built with ❤️ using Flutter*
+
+**Version:** 1.0.0
 
 </div>
