@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'caretaker_edit_resident.dart';
 
 class CaretakerResidentProfileScreen extends StatelessWidget {
   final Map<String, String> data;

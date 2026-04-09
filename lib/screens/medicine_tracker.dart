@@ -11,11 +11,31 @@ class MedicineTrackerScreen extends StatefulWidget {
 
 class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
 
-  List<Map<String, String>> medicines = [
-    {"name": "Lisinopril", "status": "taken"},
-    {"name": "Donepezil", "status": "pending"},
-    {"name": "Vitamin D3", "status": "upcoming"},
-    {"name": "Aspirin", "status": "missed"},
+  List<Map<String, dynamic>> medicines = [
+    {
+      "name": "Lisinopril",
+      "desc": "10mg — Before Breakfast",
+      "time": "08:00 AM",
+      "status": "taken"
+    },
+    {
+      "name": "Donepezil",
+      "desc": "5mg — After Lunch",
+      "time": "12:30 PM",
+      "status": "pending"
+    },
+    {
+      "name": "Vitamin D3",
+      "desc": "1000 IU — Once Daily",
+      "time": "06:00 PM",
+      "status": "upcoming"
+    },
+    {
+      "name": "Aspirin",
+      "desc": "81mg — Blood Thinner",
+      "time": "07:00 AM",
+      "status": "missed"
+    },
   ];
 
   void markAsTaken(int index) {
@@ -23,6 +43,76 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
       medicines[index]["status"] = "taken";
     });
   }
+
+void openAddMedicineSheet() {
+
+  TextEditingController nameController = TextEditingController();
+  TextEditingController doseController = TextEditingController();
+  TextEditingController timeController = TextEditingController();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (context) {
+      return Padding(
+        padding: EdgeInsets.only(
+          left: 16,
+          right: 16,
+          top: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+
+            const Text("Add Medicine",
+                style: TextStyle(fontWeight: FontWeight.bold)),
+
+            const SizedBox(height: 15),
+
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Medicine Name"),
+            ),
+
+            TextField(
+              controller: doseController,
+              decoration: const InputDecoration(labelText: "Dose"),
+            ),
+
+            TextField(
+              controller: timeController,
+              decoration: const InputDecoration(labelText: "Time"),
+            ),
+
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: () {
+                if (nameController.text.isEmpty) return;
+
+                setState(() {
+                  medicines.add({
+                    "name": nameController.text,
+                    "desc": doseController.text,
+                    "time": timeController.text,
+                    "status": "pending"
+                  });
+                });
+
+                Navigator.pop(context);
+              },
+              child: const Text("Save"),
+            )
+          ],
+        ),
+      );
+    },
+  );
+}
 
   int get taken =>
       medicines.where((m) => m["status"] == "taken").length;
@@ -63,13 +153,11 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
                             child: const Icon(Icons.arrow_back, color: Colors.blue),
                           ),
                           const SizedBox(width: 10),
-                          const Text(
-                            "Medicine Tracker",
-                            style: TextStyle(
+                          const Text("Medicine Tracker",
+                          style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 18,
-                            ),
-                          ),
+                              color: Colors.blue)),
                         ],
                       ),
                       const Icon(Icons.calendar_today, color: Colors.blue),
@@ -80,96 +168,80 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
             ),
           ),
 
-          // 🔹 MAIN CONTENT
+          // 🔹 MAIN
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 110, 16, 120),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
-                  // DATE
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text("TODAY", style: TextStyle(color: Colors.grey)),
-                          SizedBox(height: 4),
-                          Text("Monday, 24 Oct",
-                              style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                      const Icon(Icons.medical_services, color: Colors.blue),
-                    ],
-                  ),
+                // DATE
+                const Text("TODAY", style: TextStyle(color: Colors.grey)),
+                const Text("Monday, 24 Oct",
+                    style:
+                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
 
-                  const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-                  // 📊 STATS
-                  Row(
-                    children: [
-                      Expanded(child: _stat("$taken", "Taken", Colors.green)),
-                      const SizedBox(width: 10),
-                      Expanded(child: _stat("$pending", "Pending", Colors.orange)),
-                      const SizedBox(width: 10),
-                      Expanded(child: _stat("$missed", "Missed", Colors.red)),
-                    ],
-                  ),
+                // 📊 STATS
+                Row(
+                  children: [
+                    Expanded(child: _stat("$taken", "Taken", Colors.green)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _stat("$pending", "Pending", Colors.orange)),
+                    const SizedBox(width: 10),
+                    Expanded(child: _stat("$missed", "Missed", Colors.red)),
+                  ],
+                ),
 
-                  const SizedBox(height: 30),
+                const SizedBox(height: 25),
 
-                  const Text("SCHEDULE",
-                      style: TextStyle(color: Colors.grey)),
+                const Text("SCHEDULE",
+                    style: TextStyle(color: Colors.grey)),
 
-                  const SizedBox(height: 15),
+                const SizedBox(height: 10),
 
-                  // GIVEN
-                  _card("Lisinopril", "10mg — Before Breakfast", "08:00 AM", "GIVEN", Colors.green),
+                // 📋 LIST
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: medicines.length,
+                    itemBuilder: (context, index) {
 
-                  const SizedBox(height: 15),
+                      final m = medicines[index];
 
-                  // PENDING
-                  _pendingCard(1),
-
-                  const SizedBox(height: 15),
-
-                  // UPCOMING
-                  _card("Vitamin D3", "1000 IU — Once Daily", "06:00 PM", "UPCOMING", Colors.grey),
-
-                  const SizedBox(height: 15),
-
-                  // MISSED
-                  _missedCard(),
-
-                  const SizedBox(height: 30),
-
-                  // ADD PRESCRIPTION
-                  GestureDetector(
-                    onTap: () {
-                      print("Add Prescription Clicked");
+                      if (m["status"] == "pending") {
+                        return _pendingCard(m, index);
+                      } else if (m["status"] == "missed") {
+                        return _missedCard(m);
+                      } else {
+                        return _normalCard(m);
+                      }
                     },
-                    child: Container(
-                      height: 60,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey.shade300, width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Center(
-                        child: Text("+ Add Prescription",
-                            style: TextStyle(fontWeight: FontWeight.w600)),
-                      ),
+                  ),
+                ),
+
+                const SizedBox(height: 10),
+
+                // ➕ ADD
+                GestureDetector(
+                  onTap: openAddMedicineSheet,
+                  child: Container(
+                    height: 55,
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey.shade300, width: 2),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Center(
+                      child: Text("+ Add Prescription",
+                          style: TextStyle(fontWeight: FontWeight.w600)),
                     ),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
 
-          // 🔻 NAV BAR
+          // 🔻 NAV
           Positioned(
             bottom: 0,
             left: 0,
@@ -177,13 +249,13 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white,
                 borderRadius:
                     const BorderRadius.vertical(top: Radius.circular(30)),
               ),
-              child: Row(
+              child: const Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
+                children: [
                   _nav(Icons.home, "Home", false),
                   _nav(Icons.favorite, "Vitals", false),
                   _nav(Icons.medical_services, "Care", true),
@@ -195,33 +267,61 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
         ],
       ),
 
-      // 🚨 FAB
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () {
-          print("Emergency Clicked");
+          ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text("Emergency Triggered")));
         },
         child: const Icon(Icons.emergency),
       ),
     );
   }
 
-  // 🔹 PENDING CARD
-  Widget _pendingCard(int index) {
+  // 🔹 NORMAL CARD
+  Widget _normalCard(Map m) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.blue.withOpacity(0.2), width: 2),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(m["desc"]),
+          ]),
+          Column(
+            children: [
+              Text(m["status"].toUpperCase()),
+              Text(m["time"]),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 🔹 PENDING CARD
+  Widget _pendingCard(Map m, int index) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.blue.withOpacity(0.2)),
       ),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text("Donepezil", style: TextStyle(fontWeight: FontWeight.bold)),
-              Text("12:30 PM", style: TextStyle(color: Colors.blue)),
+            children: [
+              Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(m["time"], style: const TextStyle(color: Colors.blue)),
             ],
           ),
           const SizedBox(height: 10),
@@ -242,6 +342,30 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
               ),
             ),
           )
+        ],
+      ),
+    );
+  }
+
+  // 🔹 MISSED CARD
+  Widget _missedCard(Map m) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+          Text(m["desc"]),
+          const SizedBox(height: 6),
+          Text("Missed at ${m["time"]}",
+              style: const TextStyle(color: Colors.red)),
+          const Text("⚠ Alert: Dose missed",
+              style: TextStyle(color: Colors.red)),
         ],
       ),
     );
@@ -273,57 +397,6 @@ class _stat extends StatelessWidget {
       ),
     );
   }
-}
-
-// 🔹 NORMAL CARD
-Widget _card(String title, String subtitle, String time, String status, Color color) {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(subtitle),
-          ],
-        ),
-        Column(
-          children: [
-            Text(status, style: TextStyle(color: color)),
-            Text(time),
-          ],
-        ),
-      ],
-    ),
-  );
-}
-
-// 🔹 MISSED CARD
-Widget _missedCard() {
-  return Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.red.withOpacity(0.1),
-      borderRadius: BorderRadius.circular(16),
-    ),
-    child: const Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text("Aspirin", style: TextStyle(fontWeight: FontWeight.bold)),
-        Text("81mg — Blood Thinner"),
-        SizedBox(height: 6),
-        Text("Missed at 07:00 AM", style: TextStyle(color: Colors.red)),
-        Text("⚠ Alert: Dose missed",
-            style: TextStyle(color: Colors.red)),
-      ],
-    ),
-  );
 }
 
 // 🔹 NAV

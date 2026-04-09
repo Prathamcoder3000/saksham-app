@@ -57,22 +57,19 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
             // 🔝 HEADER
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.all(16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: const [
-                      Icon(Icons.menu, color: Colors.blue),
-                      SizedBox(width: 10),
-                      Text("Daily Checklist",
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back, color: Colors.blue),
+                  ),
+                  const SizedBox(width: 10),
+                  const Text("Daily Checklist",
                           style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 18,
                               color: Colors.blue)),
-                    ],
-                  ),
-                  const CircleAvatar()
                 ],
               ),
             ),

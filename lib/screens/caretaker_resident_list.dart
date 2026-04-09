@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'resident_profile.dart';
 import 'caretaker_resident_profile.dart';
+import 'caretaker_add_resident.dart';
 
 class CaretakerResidentListScreen extends StatefulWidget {
   const CaretakerResidentListScreen({super.key});
@@ -54,22 +55,19 @@ class _CaretakerResidentListScreenState
 
             // 🔝 HEADER
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              padding: const EdgeInsets.all(16),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: const [
-                  Row(
-                    children: [
-                      Icon(Icons.menu, color: Colors.blue),
-                      SizedBox(width: 10),
-                      Text("Residents",
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.blue)),
-                    ],
+                children: [
+                  GestureDetector(
+                    onTap: () => Navigator.pop(context),
+                    child: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
-                  Icon(Icons.search, color: Colors.blue),
+                  const SizedBox(width: 10),
+                  const Text("Residents",
+                          style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 18,
+                              color: Colors.blue)),
                 ],
               ),
             ),
@@ -222,7 +220,20 @@ class _CaretakerResidentListScreenState
       // ➕ FAB
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
-        onPressed: () {},
+        onPressed: () async {
+          final newResident = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => const CaretakerAddResidentScreen(),
+            ),
+          );
+
+          if (newResident != null) {
+            setState(() {
+              residents.add(newResident);
+            });
+          }
+        },
         child: const Icon(Icons.add),
       ),
 
