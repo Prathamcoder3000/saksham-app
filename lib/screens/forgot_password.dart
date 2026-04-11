@@ -1,7 +1,32 @@
 import 'package:flutter/material.dart';
 
-class ForgotPasswordScreen extends StatelessWidget {
+class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
+
+  @override
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+}
+
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    if (_formKey.currentState!.validate()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Reset link sent! Check your inbox."),
+          backgroundColor: Colors.teal,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -55,8 +80,6 @@ class ForgotPasswordScreen extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
-
-                  // Back
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
@@ -69,9 +92,7 @@ class ForgotPasswordScreen extends StatelessWidget {
                       child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
                   ),
-
                   const Spacer(),
-
                   const Text(
                     "Saksham",
                     style: TextStyle(
@@ -82,7 +103,6 @@ class ForgotPasswordScreen extends StatelessWidget {
                       fontFamily: "Lexend",
                     ),
                   ),
-
                   const Spacer(),
                   const SizedBox(width: 40),
                 ],
@@ -93,7 +113,6 @@ class ForgotPasswordScreen extends StatelessWidget {
           // 🔹 MAIN CONTENT
           Column(
             children: [
-
               const SizedBox(height: 140),
 
               // TITLE
@@ -128,135 +147,139 @@ class ForgotPasswordScreen extends StatelessWidget {
                     ),
                   ),
 
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
 
-                      // HEADER
-                      const Text(
-                        "Forgot Password",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          fontFamily: "Lexend",
+                        const Text(
+                          "Forgot Password",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: "Lexend",
+                          ),
                         ),
-                      ),
-
-                      const SizedBox(height: 8),
-
-                      const Text(
-                        "Enter your email to reset password. We'll send a secure link to your inbox.",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          fontFamily: "Lexend",
+                        const SizedBox(height: 8),
+                        const Text(
+                          "Enter your email to reset password. We'll send a secure link to your inbox.",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 14,
+                            fontFamily: "Lexend",
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 30),
 
-                      const SizedBox(height: 30),
-
-                      // EMAIL LABEL
-                      const Text(
-                        "Email Address",
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: "Lexend",
+                        const Text(
+                          "Email Address",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontFamily: "Lexend",
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 8),
 
-                      const SizedBox(height: 8),
-
-                      // EMAIL FIELD
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(18),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.03),
-                              blurRadius: 10,
-                            )
-                          ],
-                        ),
-                        child: Row(
-                          children: const [
-                            Icon(Icons.email_outlined, color: Colors.grey),
-                            SizedBox(width: 10),
-                            Expanded(
-                              child: TextField(
-                                decoration: InputDecoration(
-                                  hintText: "caregiver@saksham.com",
-                                  border: InputBorder.none,
+                        // EMAIL FIELD
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(18),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 10,
+                              )
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.email_outlined, color: Colors.grey),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _emailController,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (v) => v == null || v.isEmpty
+                                      ? "Please enter your email"
+                                      : null,
+                                  decoration: const InputDecoration(
+                                    hintText: "caregiver@saksham.com",
+                                    border: InputBorder.none,
+                                  ),
                                 ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        const SizedBox(height: 40),
+
+                        // 🔘 BUTTON
+                        GestureDetector(
+                          onTap: _submit,
+                          child: Container(
+                            width: double.infinity,
+                            height: 55,
+                            decoration: BoxDecoration(
+                              color: const Color(0xFF1E293B),
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.2),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 6),
+                                )
+                              ],
+                            ),
+                            child: const Center(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    "Reset Password",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontFamily: "Lexend",
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Icon(Icons.arrow_forward, color: Colors.white),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      // 🔘 BUTTON
-                      Container(
-                        width: double.infinity,
-                        height: 55,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E293B),
-                          borderRadius: BorderRadius.circular(30),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.2),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            )
-                          ],
-                        ),
-                        child: const Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                "Reset Password",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontFamily: "Lexend",
-                                ),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward, color: Colors.white),
-                            ],
                           ),
                         ),
-                      ),
 
-                      const Spacer(),
+                        const Spacer(),
 
-                      // 🔙 BACK TO LOGIN
-                      Center(
-                        child: GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.arrow_back, size: 18, color: Colors.blue),
-                              SizedBox(width: 6),
-                              Text(
-                                "Back to Login",
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontWeight: FontWeight.w500,
-                                  fontFamily: "Lexend",
+                        // 🔙 BACK TO LOGIN
+                        Center(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.arrow_back, size: 18, color: Colors.blue),
+                                SizedBox(width: 6),
+                                Text(
+                                  "Back to Login",
+                                  style: TextStyle(
+                                    color: Colors.blue,
+                                    fontWeight: FontWeight.w500,
+                                    fontFamily: "Lexend",
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-
-                      const SizedBox(height: 10),
-                    ],
+                        const SizedBox(height: 10),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'caretaker_dashboard.dart';
 
 class EmergencySOSScreen extends StatefulWidget {
   const EmergencySOSScreen({super.key});
@@ -255,51 +256,70 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
               ),
             ),
 
-            const Spacer(),
+          ],
+        ),
+      ),
 
-            // 🔻 BOTTOM NAV
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _nav(Icons.home, "Home", false),
-                  _nav(Icons.favorite, "Health", false),
-                  _nav(Icons.emergency, "SOS", true),
-                  _nav(Icons.group, "Care", false),
-                ],
-              ),
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.red.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
             ),
           ],
+        ),
+        child: Builder(
+          builder: (ctx) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navBtnSos(ctx, Icons.home, "Home", false),
+              _navBtnSos(ctx, Icons.favorite, "Health", false),
+              _navBtnSos(ctx, Icons.emergency, "SOS", true),
+              _navBtnSos(ctx, Icons.group, "Care", false),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
-// 🔻 NAV ITEM
-class _nav extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _nav(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label,
+Widget _navBtnSos(BuildContext context, IconData icon, String label, bool active) {
+  return GestureDetector(
+    onTap: () {
+      if (active) return;
+      
+      if (label == "Home") {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 0)), (r) => false);
+      } else if (label == "Health") {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 1)), (r) => false);
+      } else if (label == "Care") {
+        Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 2)), (r) => false);
+      }
+    },
+    child: Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: active ? Colors.red : Colors.grey),
+          const SizedBox(height: 2),
+          Text(
+            label,
             style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.blue : Colors.grey)),
-      ],
-    );
-  }
+              fontSize: 10,
+              color: active ? Colors.red : Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

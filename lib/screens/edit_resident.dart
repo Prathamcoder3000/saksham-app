@@ -105,7 +105,7 @@ class EditResidentScreen extends StatelessWidget {
                     title: "Personal Info",
                     child: Column(
                       children: [
-                        _field("FULL NAME", "Arthur Montgomery"),
+                        _field("FULL NAME", "Ramesh Sharma"),
                         const SizedBox(height: 15),
                         _field("AGE", "78"),
                       ],
@@ -134,9 +134,9 @@ class EditResidentScreen extends StatelessWidget {
                     iconColor: Colors.red,
                     child: Column(
                       children: [
-                        _field("CONTACT NAME", "Sarah Montgomery"),
+                        _field("CONTACT NAME", "Priya Sharma"),
                         const SizedBox(height: 15),
-                        _field("PHONE NUMBER", "+1 (555) 123-4567",
+                        _field("PHONE NUMBER", "+91 98765 43210",
                             icon: Icons.call),
                       ],
                     ),

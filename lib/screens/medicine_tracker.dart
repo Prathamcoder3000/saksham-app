@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'caretaker_dashboard.dart';
 
 class MedicineTrackerScreen extends StatefulWidget {
   const MedicineTrackerScreen({super.key});
@@ -13,35 +14,47 @@ class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
 
   List<Map<String, dynamic>> medicines = [
     {
-      "name": "Lisinopril",
-      "desc": "10mg — Before Breakfast",
-      "time": "08:00 AM",
+      "name": "Metformin",
+      "desc": "500mg — After Breakfast (Diabetes)",
+      "time": "09:00 AM",
       "status": "taken"
     },
     {
-      "name": "Donepezil",
-      "desc": "5mg — After Lunch",
-      "time": "12:30 PM",
+      "name": "Amlodipine",
+      "desc": "5mg — Before Dinner (BP)",
+      "time": "08:00 PM",
       "status": "pending"
     },
     {
       "name": "Vitamin D3",
-      "desc": "1000 IU — Once Daily",
-      "time": "06:00 PM",
+      "desc": "60,000 IU — Once Weekly",
+      "time": "10:00 AM",
       "status": "upcoming"
     },
     {
       "name": "Aspirin",
-      "desc": "81mg — Blood Thinner",
+      "desc": "75mg — Blood Thinner (Heart)",
       "time": "07:00 AM",
       "status": "missed"
     },
   ];
 
-  void markAsTaken(int index) {
+  void toggleStatus(int index) {
     setState(() {
-      medicines[index]["status"] = "taken";
+      String current = medicines[index]["status"];
+      if (current == "taken" || current == "missed") {
+        medicines[index]["status"] = "pending";
+      } else {
+        medicines[index]["status"] = "taken";
+      }
     });
+  }
+
+  String get _liveDate {
+    final now = DateTime.now();
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]}';
   }
 
 void openAddMedicineSheet() {
@@ -176,8 +189,8 @@ void openAddMedicineSheet() {
               children: [
 
                 // DATE
-                const Text("TODAY", style: TextStyle(color: Colors.grey)),
-                const Text("Monday, 24 Oct",
+                const Text("AADHAR-LINKED HEALTH RECORD", style: TextStyle(color: Colors.grey)),
+                Text(_liveDate,
                     style:
                         TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
 
@@ -209,12 +222,12 @@ void openAddMedicineSheet() {
 
                       final m = medicines[index];
 
-                      if (m["status"] == "pending") {
+                      if (m["status"] == "pending" || m["status"] == "upcoming") {
                         return _pendingCard(m, index);
                       } else if (m["status"] == "missed") {
-                        return _missedCard(m);
+                        return _missedCard(m, index);
                       } else {
-                        return _normalCard(m);
+                        return _normalCard(m, index);
                       }
                     },
                   ),
@@ -241,30 +254,32 @@ void openAddMedicineSheet() {
             ),
           ),
 
-          // 🔻 NAV
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _nav(Icons.home, "Home", false),
-                  _nav(Icons.favorite, "Vitals", false),
-                  _nav(Icons.medical_services, "Care", true),
-                  _nav(Icons.person, "Profile", false),
-                ],
-              ),
-            ),
-          ),
         ],
+      ),
+
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navBtn(Icons.home, "Home", false),
+            _navBtn(Icons.monitor_heart, "Vitals", false),
+            _navBtn(Icons.medical_services, "Care", true),
+            _navBtn(Icons.person, "Profile", false),
+          ],
+        ),
       ),
 
       floatingActionButton: FloatingActionButton(
@@ -278,29 +293,68 @@ void openAddMedicineSheet() {
     );
   }
 
-  // 🔹 NORMAL CARD
-  Widget _normalCard(Map m) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+  Widget _navBtn(IconData icon, String label, bool active) {
+    return GestureDetector(
+      onTap: () {
+        if (active) return;
+        
+        if (label == "Home") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 0)), (r) => false);
+        } else if (label == "Vitals") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 1)), (r) => false);
+        } else if (label == "Care") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 2)), (r) => false);
+        } else if (label == "Profile") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 3)), (r) => false);
+        }
+      },
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: active ? const Color(0xFF004AC6) : Colors.grey),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: active ? const Color(0xFF004AC6) : Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(m["desc"]),
-          ]),
-          Column(
-            children: [
-              Text(m["status"].toUpperCase()),
-              Text(m["time"]),
-            ],
-          ),
-        ],
+    );
+  }
+
+  // 🔹 NORMAL CARD
+  Widget _normalCard(Map m, int index) {
+    return GestureDetector(
+      onTap: () => toggleStatus(index),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(m["desc"]),
+            ]),
+            Column(
+              children: [
+                Text(m["status"].toUpperCase()),
+                Text(m["time"]),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -326,7 +380,7 @@ void openAddMedicineSheet() {
           ),
           const SizedBox(height: 10),
           GestureDetector(
-            onTap: () => markAsTaken(index),
+            onTap: () => toggleStatus(index),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(12),
@@ -348,25 +402,28 @@ void openAddMedicineSheet() {
   }
 
   // 🔹 MISSED CARD
-  Widget _missedCard(Map m) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
-          Text(m["desc"]),
-          const SizedBox(height: 6),
-          Text("Missed at ${m["time"]}",
-              style: const TextStyle(color: Colors.red)),
-          const Text("⚠ Alert: Dose missed",
-              style: TextStyle(color: Colors.red)),
-        ],
+  Widget _missedCard(Map m, int index) {
+    return GestureDetector(
+      onTap: () => toggleStatus(index),
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.red.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(m["desc"]),
+            const SizedBox(height: 6),
+            Text("Missed at ${m["time"]}",
+                style: const TextStyle(color: Colors.red)),
+            const Text("⚠ Alert: Dose missed",
+                style: TextStyle(color: Colors.red)),
+          ],
+        ),
       ),
     );
   }
@@ -398,25 +455,4 @@ class _stat extends StatelessWidget {
     );
   }
 }
-
-// 🔹 NAV
-class _nav extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _nav(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label,
-            style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.blue : Colors.grey)),
-      ],
-    );
-  }
-}
+

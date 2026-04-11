@@ -1,6 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'add_staff_screen.dart';
+import 'reports_screen.dart';
+import 'resident_list.dart';
+
 class ManageStaffScreen extends StatelessWidget {
   const ManageStaffScreen({super.key});
 
@@ -28,10 +31,13 @@ class ManageStaffScreen extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Row(
-                        children: const [
-                          Icon(Icons.arrow_back, color: Color(0xFF004AC6)),
-                          SizedBox(width: 10),
-                          Text(
+                        children: [
+                          GestureDetector(
+                            onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
+                            child: const Icon(Icons.arrow_back, color: Color(0xFF004AC6)),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
                             "Staff Management",
                             style: TextStyle(
                               fontWeight: FontWeight.w600,
@@ -102,63 +108,100 @@ class ManageStaffScreen extends StatelessWidget {
 
                   const SizedBox(height: 15),
 
-                  _staff("Dr. Sarah Jenkins", "Senior Caregiver", "Morning Shift", Colors.green),
-                  _staff("Marcus Thompson", "Registered Nurse", "On Leave", Colors.grey),
-                  _staff("Elena Rodriguez", "Physical Therapist", "Morning Shift", Colors.green),
-                  _staff("Dr. James Wilson", "Geriatric Specialist", "Night Shift", Colors.blue),
-                  _staff("Lila Chen", "Care Assistant", "Morning Shift", Colors.teal),
-                  _staff("David Miller", "Social Worker", "Afternoon Shift", Colors.blue),
+                  _staff("Dr. Neha Verma", "Senior Caregiver", "Morning Shift", Colors.green),
+                  _staff("Sunil Gupta", "Registered Nurse", "On Leave", Colors.grey),
+                  _staff("Kavita Iyer", "Physical Therapist", "Morning Shift", Colors.green),
+                  _staff("Dr. Ashok Menon", "Geriatric Specialist", "Night Shift", Colors.blue),
+                  _staff("Leela Desai", "Care Assistant", "Morning Shift", Colors.teal),
+                  _staff("Ravi Kumar", "Social Worker", "Afternoon Shift", Colors.blue),
                 ],
               ),
             ),
           ),
 
-          // 🔻 BOTTOM NAV
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 16),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _nav(Icons.dashboard, "Dashboard", false),
-                  _nav(Icons.group, "Staff", true),
-                  _nav(Icons.people, "Residents", false),
-                  _nav(Icons.settings, "Settings", false),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
 
-      // FAB
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Builder(
+          builder: (ctx) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navBtnMs(ctx, Icons.dashboard, "Dashboard", false),
+              _navBtnMs(ctx, Icons.group, "Staff", true),
+              _navBtnMs(ctx, Icons.people, "Residents", false),
+              _navBtnMs(ctx, Icons.analytics, "Reports", false),
+            ],
+          ),
+        ),
+      ),
+
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF2563EB),
         onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                builder: (context) => const AddStaffScreen(),
-                ),
-            );
-            },
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddStaffScreen(),
+            ),
+          );
+        },
         child: const Icon(Icons.add),
       ),
     );
   }
 }
 
-//////////////////////////////////////////////////
-// 🔹 STAT CARD (WITH ICON BACKGROUND)
-//////////////////////////////////////////////////
+Widget _navBtnMs(BuildContext context, IconData icon, String label, bool active) {
+  return GestureDetector(
+    onTap: () {
+      if (active) return;
+      
+      if (label == "Dashboard") {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      } else if (label == "Staff") {
+        // Already here
+      } else if (label == "Residents") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResidentListScreen()));
+      } else if (label == "Reports") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+      }
+    },
+    child: Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: active ? const Color(0xFF004AC6) : Colors.grey),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: active ? const Color(0xFF004AC6) : Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+
 Widget _stat(String title, String value, bool primary, IconData icon) {
   return Container(
     height: 100,
@@ -284,27 +327,4 @@ Widget _staff(String name, String role, String shift, Color color) {
     ),
   );
 }
-
-//////////////////////////////////////////////////
-// 🔹 NAV
-//////////////////////////////////////////////////
-class _nav extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _nav(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label,
-            style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.blue : Colors.grey)),
-      ],
-    );
-  }
-}
+

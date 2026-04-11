@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'resident_profile.dart';
 import 'caretaker_resident_profile.dart';
 import 'caretaker_add_resident.dart';
+import 'caretaker_dashboard.dart';
 
 class CaretakerResidentListScreen extends StatefulWidget {
   const CaretakerResidentListScreen({super.key});
@@ -18,27 +19,27 @@ class _CaretakerResidentListScreenState
 
   final residents = [
     {
-      "name": "Arthur Montgomery",
+      "name": "Ramesh Sharma",
       "room": "Room 302 • North Wing",
       "status": "stable"
     },
     {
-      "name": "Elena Rodriguez",
+      "name": "Sunita Patel",
       "room": "Room 105 • East Wing",
       "status": "monitoring"
     },
     {
-      "name": "Samuel Sterling",
+      "name": "Anil Desai",
       "room": "Room 412 • South Wing",
       "status": "stable"
     },
     {
-      "name": "Beatrice Thorne",
+      "name": "Lata Mangeshkar",
       "room": "Room 209 • West Wing",
       "status": "stable"
     },
     {
-      "name": "James Henderson",
+      "name": "Rajesh Khanna",
       "room": "Room 101 • East Wing",
       "status": "critical"
     },
@@ -162,6 +163,7 @@ class _CaretakerResidentListScreenState
                                   r["name"]!,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
 
                                 const SizedBox(height: 6),
@@ -172,10 +174,12 @@ class _CaretakerResidentListScreenState
                                         size: 10,
                                         color: _statusColor(r["status"]!)),
                                     const SizedBox(width: 6),
-                                    Text(
-                                      r["room"]!,
-                                      style:
-                                          const TextStyle(color: Colors.grey),
+                                    Flexible(
+                                      child: Text(
+                                        r["room"]!,
+                                        style: const TextStyle(color: Colors.grey),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -186,7 +190,7 @@ class _CaretakerResidentListScreenState
                           // STATUS BADGE
                           Container(
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 10, vertical: 6),
+                                horizontal: 7, vertical: 4),
                             decoration: BoxDecoration(
                               color: _statusColor(r["status"]!)
                                   .withOpacity(0.15),
@@ -195,14 +199,14 @@ class _CaretakerResidentListScreenState
                             child: Text(
                               r["status"]!.toUpperCase(),
                               style: TextStyle(
-                                fontSize: 10,
+                                fontSize: 9,
                                 color: _statusColor(r["status"]!),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
 
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
 
                           const Icon(Icons.chevron_right,
                               color: Colors.grey),
@@ -237,14 +241,65 @@ class _CaretakerResidentListScreenState
         child: const Icon(Icons.add),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Vitals"),
-          BottomNavigationBarItem(icon: Icon(Icons.handshake), label: "Care"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            _navBtn(Icons.home, "Home", false),
+            _navBtn(Icons.monitor_heart, "Vitals", false),
+            _navBtn(Icons.handshake, "Care", true),
+            _navBtn(Icons.person, "Profile", false),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _navBtn(IconData icon, String label, bool active) {
+    return GestureDetector(
+      onTap: () {
+        if (active) return;
+        
+        if (label == "Home") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 0)), (r) => false);
+        } else if (label == "Vitals") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 1)), (r) => false);
+        } else if (label == "Care") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 2)), (r) => false);
+        } else if (label == "Profile") {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 3)), (r) => false);
+        }
+      },
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: active ? const Color(0xFF004AC6) : Colors.grey),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: active ? const Color(0xFF004AC6) : Colors.grey,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

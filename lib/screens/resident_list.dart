@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'add_resident.dart';
 import 'resident_profile.dart';
 import 'edit_resident.dart';
+import 'manage_staff.dart';
+import 'reports_screen.dart';
 
 class ResidentListScreen extends StatefulWidget {
   const ResidentListScreen({super.key});
@@ -14,18 +16,24 @@ class ResidentListScreen extends StatefulWidget {
 class _ResidentListScreenState extends State<ResidentListScreen> {
 
   String selectedFilter = "All";
+  String searchQuery = "";
 
   final List<Map<String, dynamic>> residents = [
-    {"name": "Arthur Montgomery","room": "Room 302 • North Wing","status": "Stable","color": Color(0xFF10B981)},
-    {"name": "Elena Rodriguez","room": "Room 105 • East Wing","status": "Monitoring","color": Color(0xFFF97316)},
-    {"name": "Samuel Sterling","room": "Room 412 • South Wing","status": "Stable","color": Color(0xFF10B981)},
-    {"name": "Beatrice Thorne","room": "Room 209 • West Wing","status": "Stable","color": Color(0xFF10B981)},
-    {"name": "James Henderson","room": "Room 101 • East Wing","status": "Critical","color": Color(0xFFDC2626)},
+    {"name": "Ramesh Sharma","room": "Room 302 • North Wing","status": "Stable","color": const Color(0xFF10B981)},
+    {"name": "Sunita Patel","room": "Room 105 • East Wing","status": "Monitoring","color": const Color(0xFFF97316)},
+    {"name": "Anil Desai","room": "Room 412 • South Wing","status": "Stable","color": const Color(0xFF10B981)},
+    {"name": "Lata Mangeshkar","room": "Room 209 • West Wing","status": "Stable","color": const Color(0xFF10B981)},
+    {"name": "Rajesh Khanna","room": "Room 101 • East Wing","status": "Critical","color": const Color(0xFFDC2626)},
   ];
 
   List<Map<String, dynamic>> get filteredResidents {
-    if (selectedFilter == "All") return residents;
-    return residents.where((r) => r["status"] == selectedFilter).toList();
+    return residents.where((r) {
+      final matchesFilter = selectedFilter == "All" || r["status"] == selectedFilter;
+      final matchesSearch = searchQuery.isEmpty ||
+          r["name"].toString().toLowerCase().contains(searchQuery.toLowerCase()) ||
+          r["room"].toString().toLowerCase().contains(searchQuery.toLowerCase());
+      return matchesFilter && matchesSearch;
+    }).toList();
   }
 
   @override
@@ -47,7 +55,6 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: const [
-                    Icon(Icons.menu, color: Color(0xFF2563EB)),
                     Text(
                       "Residents",
                       style: TextStyle(
@@ -77,13 +84,14 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
                     color: const Color(0xFFEAEFF3),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: const Row(
+                  child: Row(
                     children: [
-                      Icon(Icons.search, color: Colors.grey),
-                      SizedBox(width: 12),
+                      const Icon(Icons.search, color: Colors.grey),
+                      const SizedBox(width: 12),
                       Expanded(
                         child: TextField(
-                          decoration: InputDecoration(
+                          onChanged: (val) => setState(() => searchQuery = val),
+                          decoration: const InputDecoration(
                             hintText: "Search by name or room number...",
                             border: InputBorder.none,
                           ),
@@ -181,11 +189,11 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _navItem(Icons.home, "Home", false),
-                  _navItem(Icons.favorite, "Vitals", false),
-                  _navItem(Icons.pan_tool, "Care", true),
-                  _navItem(Icons.person, "Profile", false),
+                children: [
+                  _navItemBtn(context, Icons.dashboard, "Dashboard", false),
+                  _navItemBtn(context, Icons.group, "Staff", false),
+                  _navItemBtn(context, Icons.people, "Residents", true),
+                  _navItemBtn(context, Icons.analytics, "Reports", false),
                 ],
               ),
             ),
@@ -342,27 +350,37 @@ class ResidentCard extends StatelessWidget {
   }
 }
 
-class _navItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _navItem(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Color(0xFF2563EB) : Colors.grey),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: active ? Color(0xFF2563EB) : Colors.grey,
-          ),
-        )
-      ],
-    );
-  }
+Widget _navItemBtn(BuildContext context, IconData icon, String label, bool active) {
+  return GestureDetector(
+    onTap: () {
+      if (active) return;
+      
+      if (label == "Dashboard") {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      } else if (label == "Staff") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManageStaffScreen()));
+      } else if (label == "Residents") {
+        // Already here
+      } else if (label == "Reports") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+      }
+    },
+    child: Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
+        children: [
+          Icon(icon, color: active ? const Color(0xFF2563EB) : Colors.grey),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              color: active ? const Color(0xFF2563EB) : Colors.grey,
+            ),
+          )
+        ],
+      ),
+    ),
+  );
 }

@@ -1,6 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'edit_resident.dart';
+import 'resident_list.dart';
+import 'reports_screen.dart';
+import 'dashboard_screen.dart';
 class ResidentProfileScreen extends StatelessWidget {
   const ResidentProfileScreen({super.key});
 
@@ -130,7 +133,7 @@ class ResidentProfileScreen extends StatelessWidget {
                       const SizedBox(height: 10),
 
                       const Text(
-                        "Arthur Montgomery",
+                        "Ramesh Sharma",
                         style: TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
@@ -177,9 +180,9 @@ class ResidentProfileScreen extends StatelessWidget {
                     title: "Personal Details",
                     child: Column(
                       children: const [
-                        _info("DATE OF BIRTH", "May 14, 1941"),
+                        _info("DATE OF BIRTH", "14 May 1941"),
                         _info("GENDER", "Male"),
-                        _info("ADMISSION DATE", "October 12, 2022"),
+                        _info("ADMISSION DATE", "12 October 2022"),
                       ],
                     ),
                   ),
@@ -204,7 +207,7 @@ class ResidentProfileScreen extends StatelessWidget {
                           spacing: 8,
                           children: const [
                             _chip("Hypertension"),
-                            _chip("Early-stage Dementia"),
+                            _chip("Type 2 Diabetes"),
                           ],
                         ),
 
@@ -233,8 +236,8 @@ class ResidentProfileScreen extends StatelessWidget {
 
                         const SizedBox(height: 10),
 
-                        _med("Lisinopril", "10mg • Daily 8:00 AM"),
-                        _med("Donepezil", "5mg • Daily 8:00 PM"),
+                        _med("Metformin", "500m • Daily 8:00 AM"),
+                        _med("Amlodipine", "5mg • Daily 8:00 PM"),
                       ],
                     ),
                   ),
@@ -269,13 +272,13 @@ class ResidentProfileScreen extends StatelessWidget {
 
                         const SizedBox(height: 15),
 
-                        _contact("Sarah Montgomery", "Primary • Daughter",
-                            "(555) 123-4567", true),
+                        _contact("Priya Sharma", "Primary • Daughter",
+                            "+91 98765 43210", true),
 
                         const SizedBox(height: 10),
 
-                        _contact("James Montgomery", "Secondary • Son",
-                            "(555) 987-6543", false),
+                        _contact("Rajiv Sharma", "Secondary • Son",
+                            "+91 87654 32109", false),
                       ],
                     ),
                   ),
@@ -284,30 +287,34 @@ class ResidentProfileScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔻 NAV BAR
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _nav(Icons.group, "Residents", true),
-                  _nav(Icons.favorite, "Health", false),
-                  _nav(Icons.history, "Timeline", false),
-                  _nav(Icons.settings, "Settings", false),
-                ],
-              ),
-            ),
-          ),
         ],
+      ),
+
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.9),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Builder(
+          builder: (ctx) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navBtnRpr(ctx, Icons.group, "Residents", true),
+              _navBtnRpr(ctx, Icons.favorite, "Health", false),
+              _navBtnRpr(ctx, Icons.history, "Timeline", false),
+              _navBtnRpr(ctx, Icons.settings, "Settings", false),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -426,23 +433,37 @@ Widget _contact(String name, String role, String phone, bool primary) {
   );
 }
 
-class _nav extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const _nav(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label,
+Widget _navBtnRpr(BuildContext context, IconData icon, String label, bool active) {
+  return GestureDetector(
+    onTap: () {
+      if (active) return;
+      if (label == "Residents") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResidentListScreen()));
+      } else if (label == "Health" || label == "Timeline") {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("$label view coming soon!"), behavior: SnackBarBehavior.floating),
+        );
+      } else if (label == "Settings") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+      }
+    },
+    child: Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: active ? Colors.blue : Colors.grey),
+          const SizedBox(height: 2),
+          Text(
+            label,
             style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.blue : Colors.grey)),
-      ],
-    );
-  }
+              fontSize: 10,
+              color: active ? Colors.blue : Colors.grey,
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }

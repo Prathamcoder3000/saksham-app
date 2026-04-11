@@ -14,7 +14,18 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   String selectedSection = "morning";
 
   void saveTask() {
-    if (titleController.text.isEmpty || selectedTime == null) return;
+    if (titleController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please enter a task name")),
+      );
+      return;
+    }
+    if (selectedTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Please select a time")),
+      );
+      return;
+    }
 
     final formattedTime =
         "${selectedTime!.hourOfPeriod.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')} "

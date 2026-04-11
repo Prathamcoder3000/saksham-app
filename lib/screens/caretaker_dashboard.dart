@@ -3,10 +3,25 @@ import 'daily_checklist_screen.dart';
 import 'medicine_tracker.dart';
 import 'emergency_sos.dart';
 import 'caretaker_resident_list.dart';
-class CaretakerDashboard extends StatelessWidget {
-  const CaretakerDashboard({super.key});
+import 'family_vitals_screen.dart';
+import 'caretaker_profile_screen.dart';
 
-  // 🎯 COLORS FROM YOUR HTML (EXACT TOKENS)
+class CaretakerDashboard extends StatefulWidget {
+  final int initialIndex;
+  const CaretakerDashboard({super.key, this.initialIndex = 0});
+
+  @override
+  State<CaretakerDashboard> createState() => _CaretakerDashboardState();
+}
+
+class _CaretakerDashboardState extends State<CaretakerDashboard> {
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+  }
   static const bg = Color(0xFFF6FAFE);
   static const primary = Color(0xFF004AC6);
   static const primaryContainer = Color(0xFF2563EB);
@@ -20,8 +35,6 @@ class CaretakerDashboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bg,
-
-      // 🔝 APPBAR (EXACT HEIGHT + STYLE)
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(70),
         child: Container(
@@ -33,10 +46,8 @@ class CaretakerDashboard extends StatelessWidget {
             ),
           ),
           child: Row(
-            children: [
-              const Icon(Icons.menu, color: primary, size: 26),
-              const SizedBox(width: 12),
-              const Text(
+            children: const [
+              Text(
                 "Caretaker Dashboard",
                 style: TextStyle(
                   fontSize: 22,
@@ -45,132 +56,147 @@ class CaretakerDashboard extends StatelessWidget {
                   letterSpacing: -0.3,
                 ),
               ),
-              const Spacer(),
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: surfaceHigh,
-                  shape: BoxShape.circle,
-                ),
-              )
             ],
           ),
         ),
       ),
-
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: IndexedStack(
+        index: _currentIndex,
+        children: [
+          _buildHomeTab(),
+          const FamilyVitalsScreen(), // Reusing generic vitals UI
+          const DailyChecklistScreen(), // Standard care routines
+          const CaretakerProfileScreen(),
+        ],
+      ),
+      bottomNavigationBar: Container(
+        height: 90,
+        padding: const EdgeInsets.only(bottom: 20),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.85),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color.fromRGBO(0, 74, 198, 0.06),
+              blurRadius: 32,
+              offset: Offset(0, -4),
+            )
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            _navItem(Icons.home, "Home", 0),
+            _navItem(Icons.monitor_heart, "Vitals", 1),
+            _navItem(Icons.medical_services, "Care", 2),
+            _navItem(Icons.person, "Profile", 3),
+          ],
+        ),
+      ),
+    );
+  }
 
-            // 🔥 HERO TEXT (EXACT TYPOGRAPHY)
-            const Text(
-              "Hello, Sarah",
-              style: TextStyle(
-                fontSize: 44,
-                fontWeight: FontWeight.w600,
-                height: 1.15,
-                letterSpacing: -0.8,
-              ),
+  Widget _buildHomeTab() {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 120),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            "Namaste, Priya 🙏",
+            style: TextStyle(
+              fontSize: 44,
+              fontWeight: FontWeight.w600,
+              height: 1.15,
+              letterSpacing: -0.8,
             ),
-            const SizedBox(height: 6),
-            const Text(
-              "4 priority tasks remaining for today.",
-              style: TextStyle(
-                fontSize: 16,
-                color: Color(0xFF434655),
-              ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            "4 priority tasks remaining for today.",
+            style: TextStyle(
+              fontSize: 16,
+              color: Color(0xFF434655),
             ),
-
-            const SizedBox(height: 30),
-
-            // 🧩 CARDS
-           _tile(
-              bgColor: surfaceWhite,
-              iconBg: const Color(0xFFDBE1FF),
-              iconColor: primary,
-              icon: Icons.group,
-              title: "Residents",
-              subtitle: "View and manage active resident profiles",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CaretakerResidentListScreen(),
-                  ),
-                );
-              },
-            ),
-
-            _tile(
-              bgColor: surfaceWhite,
-              iconBg: secondaryContainer,
-              iconColor: secondary,
-              icon: Icons.medication,
-              title: "Medication",
-              subtitle: "Track and confirm medicine administration",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const MedicineTrackerScreen(),
-                  ),
-                );
-              },
-            ),
-
-            _tile(
-              bgColor: surfaceWhite,
-              iconBg: const Color(0xFFD8E3FB),
-              iconColor: const Color(0xFF3C475A),
-              icon: Icons.check_circle,
-              title: "Daily Tasks",
-              subtitle: "Standard care routines and hygiene checks",
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => DailyChecklistScreen(),
-                  ),
-                );
-              },
-            ),
-
-            // 🚨 SOS (EXACT SHADOW + GRADIENT)
-            GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EmergencySOSScreen(),
-                  ),
-                );
-              },
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 18),
-                padding: const EdgeInsets.all(22),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [primaryContainer, Color(0xFF14B8A6)],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color.fromRGBO(37, 99, 235, 0.25),
-                      blurRadius: 32,
-                      offset: Offset(0, 8),
-                    )
-                  ],
+          ),
+          const SizedBox(height: 30),
+          _tile(
+            bgColor: surfaceWhite,
+            iconBg: const Color(0xFFDBE1FF),
+            iconColor: primary,
+            icon: Icons.group,
+            title: "Residents",
+            subtitle: "View and manage active resident profiles",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const CaretakerResidentListScreen(),
                 ),
-                child: Row(
-                  children: [
+              );
+            },
+          ),
+          _tile(
+            bgColor: surfaceWhite,
+            iconBg: secondaryContainer,
+            iconColor: secondary,
+            icon: Icons.medication,
+            title: "Medication",
+            subtitle: "Track and confirm medicine administration",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const MedicineTrackerScreen(),
+                ),
+              );
+            },
+          ),
+          _tile(
+            bgColor: surfaceWhite,
+            iconBg: const Color(0xFFD8E3FB),
+            iconColor: const Color(0xFF3C475A),
+            icon: Icons.check_circle,
+            title: "Daily Tasks",
+            subtitle: "Standard care routines and hygiene checks",
+            onTap: () {
+              setState(() {
+                _currentIndex = 2; // Route to embedded DailyChecklistScreen
+              });
+            },
+          ),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EmergencySOSScreen(),
+                ),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.only(bottom: 18),
+              padding: const EdgeInsets.all(22),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [primaryContainer, Color(0xFF14B8A6)],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color.fromRGBO(37, 99, 235, 0.25),
+                    blurRadius: 32,
+                    offset: Offset(0, 8),
+                  )
+                ],
+              ),
+              child: Row(
+                children: [
                   Container(
                     width: 58,
                     height: 58,
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withOpacity(0.2),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: const Center(
@@ -212,123 +238,89 @@ class CaretakerDashboard extends StatelessWidget {
               ),
             ),
           ),
-
-            const SizedBox(height: 24),
-
-            // 📝 SHIFT NOTES (NESTED CARD EXACT)
-            Container(
-              padding: const EdgeInsets.all(14),
+          const SizedBox(height: 24),
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: surfaceHigh,
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: surfaceHigh,
-                borderRadius: BorderRadius.circular(18),
+                color: surfaceWhite,
+                borderRadius: BorderRadius.circular(14),
               ),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: surfaceWhite,
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: const [
-                        Text(
-                          "Shift Notes",
-                          style: TextStyle(
-                              fontSize: 16, fontWeight: FontWeight.w600),
-                        ),
-                        Icon(Icons.edit_note, color: primary),
-                      ],
-                    ),
-                    const SizedBox(height: 18),
-                    _dotNote("Room 302 vitals updated 15m ago", secondary),
-                    _dotNote("Medication round completed for West Wing", primary),
-                  ],
-                ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: const [
+                      Text(
+                        "Shift Notes",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w600),
+                      ),
+                      Icon(Icons.edit_note, color: primary),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  _dotNote("Room 302 vitals updated — Ramesh Sharma stable", secondary),
+                  _dotNote("Morning medicine round done — North Wing", primary),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
+    );
+  }
 
-      // 🔻 NAV (GLASS EFFECT)
-      bottomNavigationBar: Container(
-        height: 90,
-        padding: const EdgeInsets.only(bottom: 20),
+  Widget _tile({
+    required Color bgColor,
+    required Color iconBg,
+    required Color iconColor,
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    VoidCallback? onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 18),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.85),
-          borderRadius:
-              const BorderRadius.vertical(top: Radius.circular(30)),
-          boxShadow: const [
-            BoxShadow(
-              color: Color.fromRGBO(0, 74, 198, 0.06),
-              blurRadius: 32,
-              offset: Offset(0, -4),
-            )
-          ],
+          color: bgColor,
+          borderRadius: BorderRadius.circular(18),
         ),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: const [
-            NavItem(Icons.home, "Home", true),
-            NavItem(Icons.monitor_heart, "Vitals", false),
-            NavItem(Icons.medical_services, "Care", false),
-            NavItem(Icons.person, "Profile", false),
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: iconBg,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: iconColor),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 4),
+                  Text(subtitle, style: const TextStyle(color: Colors.grey)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-
-  // 🔹 TILE EXACT
-Widget _tile({
-  required Color bgColor,
-  required Color iconBg,
-  required Color iconColor,
-  required IconData icon,
-  required String title,
-  required String subtitle,
-  VoidCallback? onTap,
-}) {
-  return GestureDetector(
-    onTap: onTap,
-    child: Container(
-      margin: const EdgeInsets.only(bottom: 18),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: iconBg,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.w600)),
-                const SizedBox(height: 4),
-                Text(subtitle,
-                    style: const TextStyle(color: Colors.grey)),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
-}
 
   Widget _dotNote(String text, Color color) {
     return Padding(
@@ -346,27 +338,33 @@ Widget _tile({
       ),
     );
   }
-}
 
-class NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-
-  const NavItem(this.icon, this.label, this.active, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        const SizedBox(height: 4),
-        Text(label,
-            style: TextStyle(
+  Widget _navItem(IconData icon, String label, int index) {
+    bool active = _currentIndex == index;
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+      child: Container(
+        color: Colors.transparent,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: active ? primary : Colors.grey),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
                 fontSize: 12,
-                color: active ? Colors.blue : Colors.grey))
-      ],
+                color: active ? primary : Colors.grey,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

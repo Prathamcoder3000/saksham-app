@@ -2,6 +2,8 @@ import 'dart:ui';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'detailed_report.dart';
+import 'manage_staff.dart';
+import 'resident_list.dart';
 
 class ReportsScreen extends StatelessWidget {
   const ReportsScreen({super.key});
@@ -31,8 +33,6 @@ class ReportsScreen extends StatelessWidget {
                     children: [
                       const Row(
                         children: [
-                          Icon(Icons.menu, color: Color(0xFF2563EB)),
-                          SizedBox(width: 10),
                           Text(
                             "Reports",
                             style: TextStyle(
@@ -211,34 +211,37 @@ class ReportsScreen extends StatelessWidget {
             ),
           ),
 
-          // 🔻 NAV
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 16),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: const [
-                  _nav(Icons.dashboard, "Dashboard", false),
-                  _nav(Icons.group, "Staff", false),
-                  _nav(Icons.people, "Residents", false),
-                  _nav(Icons.analytics, "Reports", true),
-                  _nav(Icons.settings, "Settings", false),
-                ],
-              ),
-            ),
-          ),
         ],
       ),
 
-      // FAB
+      bottomNavigationBar: Container(
+        height: 80,
+        padding: const EdgeInsets.only(bottom: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.07),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: Builder(
+          builder: (ctx) => Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _navBtnRp(ctx, Icons.dashboard, "Dashboard", false),
+              _navBtnRp(ctx, Icons.group, "Staff", false),
+              _navBtnRp(ctx, Icons.people, "Residents", false),
+              _navBtnRp(ctx, Icons.analytics, "Reports", true),
+              _navBtnRp(ctx, Icons.settings, "Settings", false),
+            ],
+          ),
+        ),
+      ),
+
       floatingActionButton: Container(
         decoration: BoxDecoration(
           shape: BoxShape.circle,
@@ -251,7 +254,14 @@ class ReportsScreen extends StatelessWidget {
         ),
         child: FloatingActionButton(
           backgroundColor: const Color(0xFF2563EB),
-          onPressed: () {},
+          onPressed: () {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("Report export coming soon!"),
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          },
           child: const Icon(Icons.share),
         ),
       ),
@@ -415,24 +425,40 @@ Widget _overview(BuildContext context, IconData icon, String title, String sub) 
   );
 }
 
-class _nav extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
-  const _nav(this.icon, this.label, this.active);
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, color: active ? Colors.blue : Colors.grey),
-        Text(label,
+Widget _navBtnRp(BuildContext context, IconData icon, String label, bool active) {
+  return GestureDetector(
+    onTap: () {
+      if (active) return;
+      
+      if (label == "Dashboard") {
+        Navigator.popUntil(context, (route) => route.isFirst);
+      } else if (label == "Staff") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManageStaffScreen()));
+      } else if (label == "Residents") {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResidentListScreen()));
+      } else if (label == "Settings") {
+        // Not implemented Settings screen for admin yet, pop to dashboard
+        Navigator.popUntil(context, (route) => route.isFirst);
+      }
+    },
+    child: Container(
+      color: Colors.transparent,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Column(
+        children: [
+          Icon(icon, color: active ? const Color(0xFF2563EB) : Colors.grey),
+          const SizedBox(height: 4),
+          Text(
+            label,
             style: TextStyle(
-                fontSize: 10,
-                color: active ? Colors.blue : Colors.grey)),
-      ],
-    );
-  }
+              fontSize: 11,
+              color: active ? const Color(0xFF2563EB) : Colors.grey,
+            ),
+          )
+        ],
+      ),
+    ),
+  );
 }
 
 class CirclePainter extends CustomPainter {

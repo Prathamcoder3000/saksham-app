@@ -2,28 +2,37 @@ import 'package:flutter/material.dart';
 import 'resident_list.dart';
 import 'manage_staff.dart';
 import 'reports_screen.dart';
-class DashboardScreen extends StatelessWidget {
-    const DashboardScreen({super.key});
+import 'add_resident.dart';
+import 'admin_profile_screen.dart';
+
+class DashboardScreen extends StatefulWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  int _currentIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF6FAFE),
-      body: Stack(
+      body: IndexedStack(
+        index: _currentIndex,
         children: [
-          // Scrollable content
+          Stack(
+            children: [
+              // Scrollable content
           CustomScrollView(
             slivers: [
-              // ── Top App Bar ──
               SliverAppBar(
+                automaticallyImplyLeading: false,
                 pinned: true,
                 backgroundColor: Colors.white.withOpacity(0.9),
                 elevation: 1,
                 shadowColor: Colors.blue.withOpacity(0.1),
-                leading: IconButton(
-                  icon: const Icon(Icons.menu, color: Colors.grey),
-                  onPressed: () {},
-                ),
                 title: const Text(
                   'Admin Dashboard',
                   style: TextStyle(
@@ -32,17 +41,6 @@ class DashboardScreen extends StatelessWidget {
                     color: Color(0xFF1A1A2E),
                   ),
                 ),
-                actions: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 16),
-                    child: CircleAvatar(
-                      radius: 18,
-                      backgroundColor: const Color(0xFFDBE1FF),
-                      child: const Icon(Icons.person,
-                          color: Color(0xFF00174B), size: 20),
-                    ),
-                  ),
-                ],
               ),
 
               SliverPadding(
@@ -82,7 +80,7 @@ class DashboardScreen extends StatelessWidget {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => ResidentListScreen(),
+                            builder: (context) => const AddResidentScreen(),
                           ),
                         );
                       },
@@ -128,11 +126,18 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                     const SizedBox(height: 10),
-                    _ActionCard(
-                      icon: Icons.notifications_active,
-                      title: 'Emergency Alerts',
-                      subtitle: 'Review active SOS triggers and incidents',
-                      isError: true,
+                    GestureDetector(
+                      onTap: () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Emergency Alerts triggered!'))
+                        );
+                      },
+                      child: _ActionCard(
+                        icon: Icons.notifications_active,
+                        title: 'Emergency Alerts',
+                        subtitle: 'Review active SOS triggers and incidents',
+                        isError: true,
+                      ),
                     ),
                     const SizedBox(height: 24),
 
@@ -149,7 +154,11 @@ class DashboardScreen extends StatelessWidget {
                           ),
                         ),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Opening Care Logs...'))
+                            );
+                          },
                           child: const Text(
                             'View All',
                             style: TextStyle(
@@ -192,7 +201,7 @@ class DashboardScreen extends StatelessWidget {
                             iconBg: const Color(0xFFD8E3FB),
                             iconColor: const Color(0xFF111C2D),
                             title: 'Breakfast menu confirmed for Wing B',
-                            subtitle: 'Dietician: Sarah J. • 2 hrs ago',
+                            subtitle: 'Dietician: Priya S. • 2 hrs ago',
                             time: '08:30 AM',
                           ),
                         ],
@@ -233,6 +242,9 @@ class DashboardScreen extends StatelessWidget {
               child: const Icon(Icons.add, color: Colors.white, size: 28),
             ),
           ),
+          ],
+          ),
+          const AdminProfileScreen(),
         ],
       ),
 
@@ -255,54 +267,70 @@ class DashboardScreen extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                // Dashboard (active)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 20, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDBEAFE),
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: const Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.dashboard,
-                          color: Color(0xFF1D4ED8), size: 22),
-                      SizedBox(height: 2),
-                      Text(
-                        'Dashboard',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: Color(0xFF1D4ED8),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Profile
-                const Column(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.person, color: Colors.grey, size: 22),
-                    SizedBox(height: 2),
-                    Text(
-                      'Profile',
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
+                _navItem(Icons.dashboard, 'Dashboard', 0),
+                _navItem(Icons.person, 'Profile', 1),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _navItem(IconData icon, String label, int index) {
+    bool active = _currentIndex == index;
+    if (active) {
+      return Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFFDBEAFE),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: const Color(0xFF1D4ED8), size: 22),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: Color(0xFF1D4ED8),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return GestureDetector(
+        onTap: () {
+          setState(() {
+            _currentIndex = index;
+          });
+        },
+        child: Container(
+          color: Colors.transparent,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: Colors.grey, size: 22),
+              const SizedBox(height: 2),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 }
 
@@ -811,7 +839,9 @@ class _FacilityWellnessCard extends StatelessWidget {
               ],
             ),
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,

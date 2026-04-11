@@ -27,13 +27,13 @@ class _CaretakerEditResidentScreenState
     nameController = TextEditingController(text: widget.data["name"]);
     ageController = TextEditingController(text: "82");
     conditionController =
-        TextEditingController(text: "Hypertension, Dementia");
+        TextEditingController(text: "Type 2 Diabetes, Hypertension");
     allergyController =
         TextEditingController(text: "Penicillin (High Risk)");
     contactController =
-        TextEditingController(text: "Sarah Montgomery");
+        TextEditingController(text: "Priya Sharma");
     phoneController =
-        TextEditingController(text: "+1 (555) 123-4567");
+        TextEditingController(text: "+91 98765 43210");
   }
 
   void save() {
@@ -136,9 +136,9 @@ class _CaretakerEditResidentScreenState
                 Icons.person,
                 Column(
                   children: [
-                    _field("DOB", "May 14, 1941"),
+                    _field("DOB", "14 May 1941"),
                     _field("Gender", "Male"),
-                    _field("Admission", "Oct 12, 2022"),
+                    _field("Admission", "12 Oct 2022"),
                   ],
                 ),
               ),
@@ -177,8 +177,8 @@ class _CaretakerEditResidentScreenState
 
                     const SizedBox(height: 6),
 
-                    _medEditable("Lisinopril", "8:00 AM"),
-                    _medEditable("Donepezil", "8:00 PM"),
+                    _medEditable("Metformin", "8:00 AM"),
+                    _medEditable("Amlodipine", "8:00 PM"),
                   ],
                 ),
               ),

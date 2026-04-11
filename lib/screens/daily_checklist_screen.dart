@@ -11,26 +11,26 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
   List<Map<String, dynamic>> tasks = [
     {
-      "title": "Assisted Shower",
+      "title": "Assisted Sponge Bath",
       "time": "08:30 AM",
       "status": "done",
       "section": "morning"
     },
     {
-      "title": "Morning Walk",
-      "time": "09:15 AM",
+      "title": "Morning Walk (Garden)",
+      "time": "07:00 AM",
       "status": "progress",
       "section": "morning"
     },
     {
-      "title": "Blood Pressure Check",
+      "title": "Blood Pressure & Blood Sugar Check",
       "time": "01:00 PM",
       "status": "upcoming",
       "section": "afternoon"
     },
     {
-      "title": "Light Exercise",
-      "time": "06:00 PM",
+      "title": "Physiotherapy Exercises",
+      "time": "05:30 PM",
       "status": "upcoming",
       "section": "night"
     },
@@ -38,13 +38,24 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
   void toggleTask(int index) {
     setState(() {
-      tasks[index]["status"] = "done";
+      if (tasks[index]["status"] == "done") {
+        tasks[index]["status"] = "progress";
+      } else {
+        tasks[index]["status"] = "done";
+      }
     });
   }
 
   int get total => tasks.length;
   int get done => tasks.where((t) => t["status"] == "done").length;
   int get left => total - done;
+
+  String get _liveDate {
+    final now = DateTime.now();
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +72,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
               child: Row(
                 children: [
                   GestureDetector(
-                    onTap: () => Navigator.pop(context),
+                    onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
                     child: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
                   const SizedBox(width: 10),
@@ -95,9 +106,9 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
                     const SizedBox(height: 10),
 
-                    const Text(
-                      "Monday, 24 Oct",
-                      style: TextStyle(
+                    Text(
+                    _liveDate,
+                      style: const TextStyle(
                           fontSize: 30,
                           fontWeight: FontWeight.bold),
                     ),
@@ -164,16 +175,6 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
         child: const Icon(Icons.add),
       ),
 
-      // 🔻 NAV
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 2,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Vitals"),
-          BottomNavigationBarItem(icon: Icon(Icons.checklist), label: "Care"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
-        ],
-      ),
     );
   }
 
