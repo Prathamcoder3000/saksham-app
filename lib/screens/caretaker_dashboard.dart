@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
+import 'package:saksham/providers/auth_provider.dart';
+import 'package:saksham/services/api_service.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
 import 'daily_checklist_screen.dart';
 import 'medicine_tracker.dart';
 import 'emergency_sos.dart';
 import 'caretaker_resident_list.dart';
 import 'family_vitals_screen.dart';
 import 'caretaker_profile_screen.dart';
+import 'change_password_screen.dart';
 
 class CaretakerDashboard extends StatefulWidget {
   final int initialIndex;
@@ -16,11 +20,30 @@ class CaretakerDashboard extends StatefulWidget {
 
 class _CaretakerDashboardState extends State<CaretakerDashboard> {
   int _currentIndex = 0;
+  bool _isLoading = true;
+  int _pendingTasks = 0;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _fetchSummary();
+  }
+
+  Future<void> _fetchSummary() async {
+    try {
+        // Fetch tasks to count pending
+        final taskRes = await ApiService.get('/tasks');
+        if (taskRes.statusCode == 200) {
+            final List<dynamic> tasks = jsonDecode(taskRes.body)['data'];
+            setState(() {
+                _pendingTasks = tasks.where((t) => t['status'] == 'pending').length;
+                _isLoading = false;
+            });
+        }
+    } catch (e) {
+        setState(() => _isLoading = false);
+    }
   }
   static const bg = Color(0xFFF6FAFE);
   static const primary = Color(0xFF004AC6);
@@ -102,19 +125,61 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Namaste, Priya 🙏",
-            style: TextStyle(
-              fontSize: 44,
-              fontWeight: FontWeight.w600,
-              height: 1.15,
-              letterSpacing: -0.8,
-            ),
+          Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              final String name = auth.user?.name ?? 'Caregiver';
+              final String firstName = name.isNotEmpty ? name.split(' ')[0] : 'Caregiver';
+              final bool isDefault = auth.user?.isDefaultPassword ?? false;
+              
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (isDefault) 
+                    Container(
+                      margin: const EdgeInsets.only(bottom: 20),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF2F2),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: const Color(0xFFFCA5A5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.warning_amber_rounded, color: Color(0xFFDC2626)),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text("Security Risk", style: TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF991B1B))),
+                                const Text("You are using a default password. Please change it immediately.", style: TextStyle(fontSize: 12, color: Color(0xFFB91C1C))),
+                              ],
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen())),
+                            child: const Text("Change Now"),
+                          ),
+                        ],
+                      ),
+                    ),
+                  Text(
+                    "Namaste, $firstName 🙏",
+                    style: const TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w600,
+                      height: 1.15,
+                      letterSpacing: -0.8,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: 6),
-          const Text(
-            "4 priority tasks remaining for today.",
-            style: TextStyle(
+          Text(
+            "$_pendingTasks priority tasks remaining for today.",
+            style: const TextStyle(
               fontSize: 16,
               color: Color(0xFF434655),
             ),

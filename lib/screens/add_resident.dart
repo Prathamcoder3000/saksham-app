@@ -1,5 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/api_service.dart';
+import '../services/upload_service.dart';
+import 'dart:convert';
 
 class AddResidentScreen extends StatefulWidget {
   const AddResidentScreen({super.key});
@@ -16,16 +20,54 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
   final _medicalController = TextEditingController();
   final _contactNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  File? _selectedImage;
+  bool _isSaving = false;
 
-  void _saveResident() {
+  Future<void> _pickImage() async {
+    final image = await UploadService.pickImage(ImageSource.gallery);
+    if (image != null) {
+      setState(() => _selectedImage = image);
+    }
+  }
+
+  Future<void> _saveResident() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Resident successfully saved!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+      setState(() => _isSaving = true);
+      
+      try {
+        final response = await ApiService.post('/residents', {
+          'name': _nameController.text,
+          'age': int.tryParse(_ageController.text) ?? 0,
+          'conditions': _medicalController.text.split(','),
+          'emergencyContactName': _contactNameController.text,
+          'emergencyContactPhone': _phoneController.text,
+        });
+
+        if (response.statusCode == 201) {
+            final residentData = jsonDecode(response.body)['data'];
+            final residentId = residentData['_id'];
+
+            if (_selectedImage != null) {
+                await UploadService.uploadPhoto('/upload/resident-photo/$residentId', _selectedImage!);
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Resident added successfully!"), backgroundColor: Colors.green),
+            );
+            Navigator.pop(context, true);
+        } else {
+            final data = jsonDecode(response.body);
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(data['message'] ?? "Error adding resident")),
+            );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Connection error")),
+        );
+      } finally {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -82,60 +124,66 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
                 child: Column(
                   children: [
                     // 📸 PHOTO
-                    Column(
-                      children: [
-                        Stack(
-                          children: [
-                            Container(
-                              width: 130,
-                              height: 130,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: const Color(0xFFEAEFF3),
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 4,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 15,
-                                  )
-                                ],
-                              ),
-                              child: const Icon(
-                                Icons.add_a_photo,
-                                size: 40,
-                                color: Colors.grey,
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 0,
-                              right: 0,
-                              child: Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: const BoxDecoration(
-                                  color: Color(0xFF2563EB),
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Column(
+                        children: [
+                          Stack(
+                            children: [
+                              Container(
+                                width: 130,
+                                height: 130,
+                                decoration: BoxDecoration(
                                   shape: BoxShape.circle,
+                                  color: const Color(0xFFEAEFF3),
+                                  border: Border.all(
+                                    color: Colors.white,
+                                    width: 4,
+                                  ),
+                                  image: _selectedImage != null 
+                                      ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
+                                      : null,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.05),
+                                      blurRadius: 15,
+                                    )
+                                  ],
                                 ),
-                                child: const Icon(
-                                  Icons.edit,
-                                  size: 16,
-                                  color: Colors.white,
+                                child: _selectedImage == null ? const Icon(
+                                  Icons.add_a_photo,
+                                  size: 40,
+                                  color: Colors.grey,
+                                ) : null,
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                right: 0,
+                                child: Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: const BoxDecoration(
+                                    color: Color(0xFF2563EB),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.edit,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          "Upload Resident Photo",
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w500,
+                            ],
                           ),
-                        ),
-                      ],
+                          const SizedBox(height: 10),
+                          const Text(
+                            "Upload Resident Photo",
+                            style: TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 30),
 
@@ -185,7 +233,7 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
 
                     // 🔘 BUTTON
                     GestureDetector(
-                      onTap: _saveResident,
+                      onTap: _isSaving ? null : _saveResident,
                       child: Container(
                         width: double.infinity,
                         height: 60,
@@ -199,22 +247,24 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
                             )
                           ],
                         ),
-                        child: const Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.person_add, color: Colors.white),
-                              SizedBox(width: 10),
-                              Text(
-                                "Save Resident",
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                        child: Center(
+                          child: _isSaving 
+                            ? const CircularProgressIndicator(color: Colors.white)
+                            : const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.person_add, color: Colors.white),
+                                SizedBox(width: 10),
+                                Text(
+                                  "Save Resident",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
+                              ],
+                            ),
                         ),
                       ),
                     ),

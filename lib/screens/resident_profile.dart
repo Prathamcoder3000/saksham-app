@@ -1,14 +1,51 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'edit_resident.dart';
-import 'resident_list.dart';
-import 'reports_screen.dart';
-import 'dashboard_screen.dart';
-class ResidentProfileScreen extends StatelessWidget {
-  const ResidentProfileScreen({super.key});
+import 'package:saksham/models/resident_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
+
+class ResidentProfileScreen extends StatefulWidget {
+  final String residentId;
+  const ResidentProfileScreen({super.key, required this.residentId});
+
+  @override
+  State<ResidentProfileScreen> createState() => _ResidentProfileScreenState();
+}
+
+class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
+  bool _isLoading = true;
+  ResidentModel? _resident;
+  List<dynamic> _medications = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDetails();
+  }
+
+  Future<void> _fetchDetails() async {
+    try {
+      final res = await ApiService.get('/residents/${widget.residentId}');
+      final medRes = await ApiService.get('/medicines/resident/${widget.residentId}');
+      
+      if (res.statusCode == 200) {
+        setState(() {
+          _resident = ResidentModel.fromJson(jsonDecode(res.body)['data']);
+          _medications = jsonDecode(medRes.body)['data'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+    if (_resident == null) {
+      return const Scaffold(body: Center(child: Text("Resident not found")));
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF6FAFE),
 
@@ -105,9 +142,9 @@ class ResidentProfileScreen extends StatelessWidget {
                                 color: Colors.blue,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Text(
-                                "ROOM 302",
-                                style: TextStyle(
+                              child: Text(
+                                "ROOM ${_resident!.room}",
+                                style: const TextStyle(
                                   color: Colors.white,
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -132,9 +169,9 @@ class ResidentProfileScreen extends StatelessWidget {
 
                       const SizedBox(height: 10),
 
-                      const Text(
-                        "Ramesh Sharma",
-                        style: TextStyle(
+                      Text(
+                        _resident!.name,
+                        style: const TextStyle(
                           fontSize: 26,
                           fontWeight: FontWeight.bold,
                         ),
@@ -152,7 +189,7 @@ class ResidentProfileScreen extends StatelessWidget {
                               color: const Color(0xFFEAEFF3),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Text("82 Years Old"),
+                            child: Text("${_resident!.age} Years Old"),
                           ),
 
                           const SizedBox(width: 10),
@@ -206,8 +243,7 @@ class ResidentProfileScreen extends StatelessWidget {
                         Wrap(
                           spacing: 8,
                           children: const [
-                            _chip("Hypertension"),
-                            _chip("Type 2 Diabetes"),
+                            ..._resident!.conditions.map((c) => _chip(c)).toList(),
                           ],
                         ),
 
@@ -218,16 +254,16 @@ class ResidentProfileScreen extends StatelessWidget {
 
                         const SizedBox(height: 5),
 
-                        Row(
-                          children: const [
-                            Icon(Icons.warning, color: Colors.red, size: 16),
-                            SizedBox(width: 5),
+                        ..._resident!.allergies.map((a) => Row(
+                          children: [
+                            const Icon(Icons.warning, color: Colors.red, size: 16),
+                            const SizedBox(width: 5),
                             Text(
-                              "Penicillin (High Severity)",
-                              style: TextStyle(color: Colors.red),
+                              a,
+                              style: const TextStyle(color: Colors.red),
                             )
                           ],
-                        ),
+                        )).toList(),
 
                         const SizedBox(height: 15),
 
@@ -236,8 +272,9 @@ class ResidentProfileScreen extends StatelessWidget {
 
                         const SizedBox(height: 10),
 
-                        _med("Metformin", "500m • Daily 8:00 AM"),
-                        _med("Amlodipine", "5mg • Daily 8:00 PM"),
+                        ..._medications.map((m) => _med(m['name'], "${m['dosage']} • ${m['frequency']}")).toList(),
+                        if (_medications.isEmpty) 
+                            const Text("No active medications recorded.", style: TextStyle(fontSize: 12, color: Colors.grey)),
                       ],
                     ),
                   ),
@@ -272,13 +309,8 @@ class ResidentProfileScreen extends StatelessWidget {
 
                         const SizedBox(height: 15),
 
-                        _contact("Priya Sharma", "Primary • Daughter",
-                            "+91 98765 43210", true),
-
-                        const SizedBox(height: 10),
-
-                        _contact("Rajiv Sharma", "Secondary • Son",
-                            "+91 87654 32109", false),
+                        _contact(_resident!.contactName, "Emergency Contact",
+                            _resident!.contactPhone, true),
                       ],
                     ),
                   ),

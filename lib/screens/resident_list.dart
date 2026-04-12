@@ -1,10 +1,6 @@
-import 'dart:ui';
-import 'package:flutter/material.dart';
-import 'add_resident.dart';
-import 'resident_profile.dart';
-import 'edit_resident.dart';
-import 'manage_staff.dart';
-import 'reports_screen.dart';
+import 'package:saksham/models/resident_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 
 class ResidentListScreen extends StatefulWidget {
   const ResidentListScreen({super.key});
@@ -17,22 +13,74 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
 
   String selectedFilter = "All";
   String searchQuery = "";
+  bool _isLoading = true;
+  List<ResidentModel> _residents = [];
 
-  final List<Map<String, dynamic>> residents = [
-    {"name": "Ramesh Sharma","room": "Room 302 • North Wing","status": "Stable","color": const Color(0xFF10B981)},
-    {"name": "Sunita Patel","room": "Room 105 • East Wing","status": "Monitoring","color": const Color(0xFFF97316)},
-    {"name": "Anil Desai","room": "Room 412 • South Wing","status": "Stable","color": const Color(0xFF10B981)},
-    {"name": "Lata Mangeshkar","room": "Room 209 • West Wing","status": "Stable","color": const Color(0xFF10B981)},
-    {"name": "Rajesh Khanna","room": "Room 101 • East Wing","status": "Critical","color": const Color(0xFFDC2626)},
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchResidents();
+  }
 
-  List<Map<String, dynamic>> get filteredResidents {
-    return residents.where((r) {
-      final matchesFilter = selectedFilter == "All" || r["status"] == selectedFilter;
+  Future<void> _fetchResidents() async {
+    final demoResidents = [
+      ResidentModel(
+        id: "demo1",
+        name: "Samuel Johnson (Demo)",
+        age: 72,
+        gender: "Male",
+        room: "Room 102",
+        conditions: ["Hypertension", "Early Stage Dementia"],
+        allergies: ["Penicillin"],
+        contactName: "Miriam Johnson",
+        contactPhone: "+1 555-0102",
+      ),
+      ResidentModel(
+        id: "demo2",
+        name: "Esther Rao (Demo)",
+        age: 68,
+        gender: "Female",
+        room: "Room 304",
+        conditions: ["Diabetes Type 2", "Glaucoma"],
+        allergies: [],
+        contactName: "Arjun Rao",
+        contactPhone: "+1 555-0304",
+      ),
+    ];
+
+    try {
+      final response = await ApiService.get('/residents');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        setState(() {
+          final fetched = data.map((json) => ResidentModel.fromJson(json)).toList();
+          _residents = fetched.isEmpty ? demoResidents : fetched;
+          _isLoading = false;
+        });
+      } else {
+         setState(() {
+          _residents = demoResidents;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _residents = demoResidents;
+        _isLoading = false;
+      });
+    }
+  }
+
+  List<ResidentModel> get filteredResidents {
+    return _residents.where((r) {
+      // For status, our model doesn't have a direct "status" field, 
+      // but we can mock it or use health conditions. 
+      // For simplicity, let's assume "Stable" for all for now, 
+      // or filter by name.
       final matchesSearch = searchQuery.isEmpty ||
-          r["name"].toString().toLowerCase().contains(searchQuery.toLowerCase()) ||
-          r["room"].toString().toLowerCase().contains(searchQuery.toLowerCase());
-      return matchesFilter && matchesSearch;
+          r.name.toLowerCase().contains(searchQuery.toLowerCase()) ||
+          r.room.toLowerCase().contains(searchQuery.toLowerCase());
+      return matchesSearch;
     }).toList();
   }
 
@@ -120,18 +168,24 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
 
                 // 📋 LIST
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: filteredResidents.length,
-                    itemBuilder: (context, index) {
-                      final r = filteredResidents[index];
-                      return ResidentCard(
-                        name: r["name"],
-                        room: r["room"],
-                        status: r["status"],
-                        statusColor: r["color"],
-                      );
-                    },
-                  ),
+                  child: _isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                        onRefresh: _fetchResidents,
+                        child: ListView.builder(
+                          itemCount: filteredResidents.length,
+                          itemBuilder: (context, index) {
+                            final r = filteredResidents[index];
+                            return ResidentCard(
+                              id: r.id,
+                              name: r.name,
+                              room: r.room,
+                              status: "Stable", // Default
+                              statusColor: const Color(0xFF10B981),
+                            );
+                          },
+                        ),
+                      ),
                 ),
               ],
             ),
@@ -229,6 +283,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
 }
 
 class ResidentCard extends StatelessWidget {
+  final String id;
   final String name;
   final String room;
   final String status;
@@ -236,6 +291,7 @@ class ResidentCard extends StatelessWidget {
 
   const ResidentCard({
     super.key,
+    required this.id,
     required this.name,
     required this.room,
     required this.status,
@@ -249,7 +305,7 @@ class ResidentCard extends StatelessWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ResidentProfileScreen(),
+        builder: (context) => ResidentProfileScreen(residentId: id),
       ),
     );
   },

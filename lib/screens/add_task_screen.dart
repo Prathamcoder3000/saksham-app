@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:saksham/models/resident_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 
 class AddTaskScreen extends StatefulWidget {
   const AddTaskScreen({super.key});
@@ -8,15 +11,39 @@ class AddTaskScreen extends StatefulWidget {
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
-
   final TextEditingController titleController = TextEditingController();
   TimeOfDay? selectedTime;
   String selectedSection = "morning";
+  
+  List<ResidentModel> residents = [];
+  ResidentModel? selectedResident;
+  bool _isLoading = true;
 
-  void saveTask() {
-    if (titleController.text.isEmpty) {
+  @override
+  void initState() {
+    super.initState();
+    _fetchResidents();
+  }
+
+  Future<void> _fetchResidents() async {
+    try {
+      final response = await ApiService.get('/residents');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        setState(() {
+          residents = data.map((json) => ResidentModel.fromJson(json)).toList();
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> saveTask() async {
+    if (titleController.text.isEmpty || selectedResident == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter a task name")),
+        const SnackBar(content: Text("Please enter task name and select resident")),
       );
       return;
     }
@@ -31,12 +58,27 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
         "${selectedTime!.hourOfPeriod.toString().padLeft(2, '0')}:${selectedTime!.minute.toString().padLeft(2, '0')} "
         "${selectedTime!.period == DayPeriod.am ? "AM" : "PM"}";
 
-    Navigator.pop(context, {
-      "title": titleController.text,
-      "time": formattedTime,
-      "status": "upcoming",
-      "section": selectedSection,
-    });
+    try {
+      final response = await ApiService.post('/tasks', {
+        "resident": selectedResident!.id,
+        "title": titleController.text,
+        "time": formattedTime,
+        "status": "pending",
+        "section": selectedSection,
+      });
+
+      if (response.statusCode == 201) {
+        if (!mounted) return;
+        Navigator.pop(context, true);
+      } else {
+        if (!mounted) return;
+        final error = jsonDecode(response.body)['message'] ?? 'Failed to save task';
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error connecting to server")));
+    }
   }
 
   Future<void> pickTime() async {
@@ -86,6 +128,26 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
+
+                    _isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : _inputCard(
+                        icon: Icons.person,
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<ResidentModel>(
+                            isExpanded: true,
+                            hint: const Text("Select Resident"),
+                            value: selectedResident,
+                            items: residents.map((r) => DropdownMenuItem(
+                              value: r,
+                              child: Text("${r.name} (${r.room})"),
+                            )).toList(),
+                            onChanged: (val) => setState(() => selectedResident = val),
+                          ),
+                        ),
+                      ),
+
+                    const SizedBox(height: 16),
 
                     // 🧾 TITLE INPUT
                     _inputCard(

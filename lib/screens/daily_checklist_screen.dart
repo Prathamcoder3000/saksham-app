@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:saksham/models/task_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 import 'add_task_screen.dart';
 class DailyChecklistScreen extends StatefulWidget {
   const DailyChecklistScreen({super.key});
@@ -8,46 +11,49 @@ class DailyChecklistScreen extends StatefulWidget {
 }
 
 class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
+  bool _isLoading = true;
+  List<TaskModel> tasks = [];
 
-  List<Map<String, dynamic>> tasks = [
-    {
-      "title": "Assisted Sponge Bath",
-      "time": "08:30 AM",
-      "status": "done",
-      "section": "morning"
-    },
-    {
-      "title": "Morning Walk (Garden)",
-      "time": "07:00 AM",
-      "status": "progress",
-      "section": "morning"
-    },
-    {
-      "title": "Blood Pressure & Blood Sugar Check",
-      "time": "01:00 PM",
-      "status": "upcoming",
-      "section": "afternoon"
-    },
-    {
-      "title": "Physiotherapy Exercises",
-      "time": "05:30 PM",
-      "status": "upcoming",
-      "section": "night"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchTasks();
+  }
 
-  void toggleTask(int index) {
-    setState(() {
-      if (tasks[index]["status"] == "done") {
-        tasks[index]["status"] = "progress";
-      } else {
-        tasks[index]["status"] = "done";
+  Future<void> _fetchTasks() async {
+    try {
+      final response = await ApiService.get('/tasks');
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        setState(() {
+          tasks = data.map((json) => TaskModel.fromJson(json)).toList();
+          _isLoading = false;
+        });
       }
-    });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> toggleTask(int index) async {
+    final task = tasks[index];
+    final newStatus = task.status == 'completed' ? 'pending' : 'completed';
+    
+    try {
+        final response = await ApiService.put('/tasks/${task.id}', {
+            'status': newStatus
+        });
+        
+        if (response.statusCode == 200) {
+            _fetchTasks();
+        }
+    } catch (e) {
+        // Handle error
+    }
   }
 
   int get total => tasks.length;
-  int get done => tasks.where((t) => t["status"] == "done").length;
+  int get done => tasks.where((t) => t.status == "completed").length;
   int get left => total - done;
 
   String get _liveDate {
@@ -128,25 +134,21 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
                     const SizedBox(height: 25),
 
-                    // 🌅 MORNING
-                    _sectionTitle("Morning Tasks", Icons.wb_sunny),
-
-                    _taskCard(0),
-                    _taskCard(1),
-
-                    const SizedBox(height: 20),
-
-                    // ☀ AFTERNOON
-                    _sectionTitle("Afternoon Tasks", Icons.wb_sunny_outlined),
-
-                    _taskCard(2),
-
-                    const SizedBox(height: 20),
-
-                    // 🌙 NIGHT
-                    _sectionTitle("Evening & Night", Icons.nightlight_round),
-
-                    _taskCard(3),
+                    // 🌅 TASKS LIST
+                    _isLoading 
+                      ? const Center(child: CircularProgressIndicator())
+                      : RefreshIndicator(
+                          onRefresh: _fetchTasks,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                                _sectionTitle("Today's Tasks", Icons.checklist),
+                                ...tasks.asMap().entries.map((entry) => _taskCard(entry.key)).toList(),
+                                if (tasks.isEmpty)
+                                    const Center(child: Text("No tasks assigned for today.")),
+                            ],
+                          ),
+                        ),
                   ],
                 ),
               ),
@@ -159,18 +161,13 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () async {
-          final result = await Navigator.push(
+          await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => const AddTaskScreen(),
             ),
           );
-
-          if (result != null) {
-            setState(() {
-              tasks.add(result);
-            });
-          }
+          _fetchTasks(); // Refresh list after adding
         },
         child: const Icon(Icons.add),
       ),
@@ -228,7 +225,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
   Widget _taskCard(int index) {
     final task = tasks[index];
 
-    bool isDone = task["status"] == "done";
+    bool isDone = task.status == "completed";
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -236,7 +233,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: task["status"] == "progress"
+        border: task.status == "in-progress"
             ? const Border(left: BorderSide(color: Colors.blue, width: 4))
             : null,
       ),
@@ -249,7 +246,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                task["title"],
+                task.title,
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   decoration:
@@ -258,9 +255,9 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
                 ),
               ),
               Text(
-                "${task["time"]} • ${_statusText(task["status"])}",
+                "${task.residentName} (${task.residentRoom}) • ${_statusText(task.status)}",
                 style: TextStyle(
-                  color: task["status"] == "progress"
+                  color: task.status == "in-progress"
                       ? Colors.blue
                       : Colors.grey,
                 ),

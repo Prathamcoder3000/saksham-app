@@ -1,24 +1,65 @@
-import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'login_screen.dart';
 import 'role_selection.dart';
+import 'dashboard_screen.dart';
+import 'caretaker_dashboard.dart';
+import 'family_dashboard.dart';
 
 class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+
   @override
   _SplashScreenState createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-
   @override
   void initState() {
     super.initState();
+    _initializeApp();
+  }
 
-    Future.delayed(Duration(seconds: 3), () {
+  Future<void> _initializeApp() async {
+    // Wait for the splash animation
+    await Future.delayed(const Duration(seconds: 3));
+
+    if (!mounted) return;
+
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+    final isLoggedIn = await authProvider.tryAutoLogin();
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      // Navigate based on role
+      final role = authProvider.user?.role ?? 'Caretaker';
+      Widget nextScreen;
+      
+      switch (role) {
+        case 'Admin':
+          nextScreen = const DashboardScreen();
+          break;
+        case 'Caretaker':
+          nextScreen = const CaretakerDashboard();
+          break;
+        case 'Family':
+          nextScreen = const FamilyDashboard();
+          break;
+        default:
+          nextScreen = const RoleSelectionScreen();
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => RoleSelectionScreen()),
+        MaterialPageRoute(builder: (context) => nextScreen),
       );
-    });
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+      );
+    }
   }
 
   @override

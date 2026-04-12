@@ -1,5 +1,9 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
+import '../services/api_service.dart';
+import '../services/upload_service.dart';
+import 'dart:convert';
 
 class AddStaffScreen extends StatefulWidget {
   const AddStaffScreen({super.key});
@@ -14,17 +18,55 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
   final _nameController = TextEditingController();
   final _phoneController = TextEditingController();
   final _emailController = TextEditingController();
-  String _selectedRole = "Caregiver";
+  String _selectedRole = "Caretaker";
+  File? _selectedImage;
+  bool _isSaving = false;
 
-  void _saveStaff() {
+  Future<void> _pickImage() async {
+    final image = await UploadService.pickImage(ImageSource.gallery);
+    if (image != null) {
+      setState(() => _selectedImage = image);
+    }
+  }
+
+  Future<void> _saveStaff() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Successfully added staff member!"),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.pop(context);
+      setState(() => _isSaving = true);
+      
+      try {
+        final response = await ApiService.post('/auth/register', {
+          'name': _nameController.text,
+          'email': _emailController.text,
+          'phone': _phoneController.text,
+          'role': _selectedRole,
+          'password': 'Saksham@123', // System Default
+        });
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+            final data = jsonDecode(response.body);
+            final staffId = data['user']['id'];
+
+            if (_selectedImage != null) {
+                await UploadService.uploadPhoto('/upload/staff-photo/$staffId', _selectedImage!);
+            }
+
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Staff member added successfully!"), backgroundColor: Colors.green),
+            );
+            Navigator.pop(context, true);
+        } else {
+            final data = jsonDecode(response.body);
+            ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(data['message'] ?? "Error adding staff")),
+            );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Connection error")),
+        );
+      } finally {
+        setState(() => _isSaving = false);
+      }
     }
   }
 
@@ -133,26 +175,32 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
                     const SizedBox(height: 20),
 
                     // 🔹 UPLOAD
-                    Container(
-                      height: 140,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                            color: Colors.grey.withOpacity(0.3), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          CircleAvatar(
-                            radius: 28,
-                            backgroundColor: Color(0xFFEAEFF3),
-                            child: Icon(Icons.add_a_photo,
-                                size: 30, color: Colors.grey),
-                          ),
-                          SizedBox(height: 10),
-                          Text("Upload Photo",
-                              style: TextStyle(color: Colors.grey)),
-                        ],
+                    GestureDetector(
+                      onTap: _pickImage,
+                      child: Container(
+                        height: 140,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: Colors.grey.withOpacity(0.3), width: 2),
+                          borderRadius: BorderRadius.circular(16),
+                          image: _selectedImage != null 
+                            ? DecorationImage(image: FileImage(_selectedImage!), fit: BoxFit.cover)
+                            : null,
+                        ),
+                        child: _selectedImage == null ? const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            CircleAvatar(
+                              radius: 28,
+                              backgroundColor: Color(0xFFEAEFF3),
+                              child: Icon(Icons.add_a_photo,
+                                  size: 30, color: Colors.grey),
+                            ),
+                            SizedBox(height: 10),
+                            Text("Upload Photo",
+                                style: TextStyle(color: Colors.grey)),
+                          ],
+                        ) : null,
                       ),
                     ),
                     const SizedBox(height: 20),
@@ -190,15 +238,15 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
 
                     // 🔹 BUTTON
                     GestureDetector(
-                      onTap: _saveStaff,
+                      onTap: _isSaving ? null : _saveStaff,
                       child: Container(
                         height: 60,
                         decoration: BoxDecoration(
                           color: const Color(0xFF1E293B),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Center(
-                          child: Row(
+                        child: Center(
+                          child: _isSaving ? const CircularProgressIndicator(color: Colors.white) : const Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Icon(Icons.person_add, color: Colors.white),
@@ -307,9 +355,9 @@ class _AddStaffScreenState extends State<AddStaffScreen> {
               isExpanded: true,
               value: _selectedRole,
               items: const [
-                DropdownMenuItem(value: "Caregiver", child: Text("Caregiver")),
+                DropdownMenuItem(value: "Caretaker", child: Text("Caretaker")),
                 DropdownMenuItem(value: "Admin", child: Text("Admin")),
-                DropdownMenuItem(value: "Nurse", child: Text("Nurse")),
+                DropdownMenuItem(value: "Family", child: Text("Family")),
               ],
               onChanged: (val) {
                 setState(() {

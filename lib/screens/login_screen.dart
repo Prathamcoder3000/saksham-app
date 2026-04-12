@@ -1,6 +1,10 @@
-import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'loading_screen.dart';
 import 'forgot_password.dart';
+import 'dashboard_screen.dart';
+import 'caretaker_dashboard.dart';
+import 'family_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
   final String role;
@@ -16,12 +20,48 @@ class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  void _login() {
+  Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => LoadingScreen(role: widget.role)),
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      
+      final success = await authProvider.login(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
       );
+
+      if (!mounted) return;
+
+      if (success) {
+        // Navigate based on role (ensuring it matches the selected role or returned role)
+        final role = authProvider.user?.role ?? widget.role;
+        Widget nextScreen;
+        
+        switch (role) {
+          case 'Admin':
+            nextScreen = const DashboardScreen();
+            break;
+          case 'Caretaker':
+            nextScreen = const CaretakerDashboard();
+            break;
+          case 'Family':
+            nextScreen = const FamilyDashboard();
+            break;
+          default:
+            nextScreen = const RoleSelectionScreen();
+        }
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => nextScreen),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Invalid credentials. Please try again.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -158,41 +198,49 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 30),
 
                       // 🔵 LOGIN BUTTON
-                      GestureDetector(
-                        onTap: _login,
-                        child: Container(
-                          width: double.infinity,
-                          height: 55,
-                          decoration: BoxDecoration(
-                            gradient: const LinearGradient(
-                              colors: [Color(0xFF2563EB), Color(0xFF14B8A6)],
-                            ),
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.blue.withOpacity(0.3),
-                                blurRadius: 10,
-                                offset: const Offset(0, 5),
-                              )
-                            ],
-                          ),
-                          child: Center(
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Text(
-                                  "Login",
-                                  style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 18,
-                                  ),
+                      Consumer<AuthProvider>(
+                        builder: (context, auth, child) {
+                          return GestureDetector(
+                            onTap: auth.isLoading ? null : _login,
+                            child: Container(
+                              width: double.infinity,
+                              height: 55,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: auth.isLoading 
+                                    ? [Colors.grey, Colors.grey]
+                                    : [const Color(0xFF2563EB), const Color(0xFF14B8A6)],
                                 ),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, color: Colors.white),
-                              ],
+                                borderRadius: BorderRadius.circular(30),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.blue.withOpacity(0.3),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 5),
+                                  )
+                                ],
+                              ),
+                              child: Center(
+                                child: auth.isLoading
+                                  ? const CircularProgressIndicator(color: Colors.white)
+                                  : Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: const [
+                                        Text(
+                                          "Login",
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        SizedBox(width: 8),
+                                        Icon(Icons.arrow_forward, color: Colors.white),
+                                      ],
+                                    ),
+                              ),
                             ),
-                          ),
-                        ),
+                          );
+                        },
                       ),
                       const SizedBox(height: 25),
 

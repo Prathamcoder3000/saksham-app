@@ -1,15 +1,49 @@
-import 'dart:ui';
-import 'dart:math';
-import 'package:flutter/material.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 import 'detailed_report.dart';
 import 'manage_staff.dart';
 import 'resident_list.dart';
 
-class ReportsScreen extends StatelessWidget {
+class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
 
   @override
+  State<ReportsScreen> createState() => _ReportsScreenState();
+}
+
+class _ReportsScreenState extends State<ReportsScreen> {
+  bool _isLoading = true;
+  Map<String, dynamic> _summary = {};
+  List<dynamic> _trend = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final summaryRes = await ApiService.get('/reports/summary');
+      final trendRes = await ApiService.get('/reports/adherence-trend');
+
+      if (summaryRes.statusCode == 200 && trendRes.statusCode == 200) {
+        setState(() {
+          _summary = jsonDecode(summaryRes.body)['data'];
+          _trend = jsonDecode(trendRes.body)['data'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF1F5F9),
 
@@ -31,9 +65,14 @@ class ReportsScreen extends StatelessWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Text(
+                          GestureDetector(
+                            onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
+                            child: const Icon(Icons.arrow_back, color: Color(0xFF2563EB)),
+                          ),
+                          const SizedBox(width: 10),
+                          const Text(
                             "Reports",
                             style: TextStyle(
                               fontSize: 20,
@@ -77,9 +116,9 @@ class ReportsScreen extends StatelessWidget {
 
                   const SizedBox(height: 25),
 
-                  _statCard(Icons.verified, "Overall Adherence", "94%", "+2.4%", Colors.blue),
-                  _statCard(Icons.notifications, "Active Alerts", "03", "Pending action", Colors.red),
-                  _statCard(Icons.calendar_today, "Daily Check-ins", "128", "Completed today", Colors.teal),
+                  _statCard(Icons.verified, "Overall Adherence", "${_summary['adherenceRate'] ?? 0}%", "+2.4%", Colors.blue),
+                  _statCard(Icons.notifications, "Active Alerts", "${_summary['activeAlerts'] ?? 0}".padLeft(2, '0'), "Pending action", Colors.red),
+                  _statCard(Icons.calendar_today, "Daily Check-ins", "${_summary['dailyCheckins'] ?? 0}", "Completed today", Colors.teal),
 
                   const SizedBox(height: 25),
 
@@ -99,7 +138,6 @@ class ReportsScreen extends StatelessWidget {
 
                   const SizedBox(height: 15),
 
-                  // 📊 CHART
                   Container(
                     height: 220,
                     padding: const EdgeInsets.all(20),
@@ -109,15 +147,11 @@ class ReportsScreen extends StatelessWidget {
                     ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _bar("Mon", 0.85),
-                        _bar("Tue", 0.92),
-                        _bar("Wed", 0.78),
-                        _bar("Thu", 0.96),
-                        _bar("Fri", 1.0, highlight: true),
-                        _bar("Sat", 0.88),
-                        _bar("Sun", 0.94),
-                      ],
+                      children: _trend.map((t) {
+                          final date = DateTime.parse(t['date']);
+                          final day = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][date.weekday - 1];
+                          return _bar(day, t['rate'] / 100.0, highlight: t['rate'] >= 90);
+                      }).toList(),
                     ),
                   ),
 
@@ -153,16 +187,16 @@ class ReportsScreen extends StatelessWidget {
                           height: 150,
                           width: 150,
                           child: CustomPaint(
-                            painter: CirclePainter(94),
-                            child: const Center(
+                            painter: CirclePainter((_summary['adherenceRate'] ?? 0).toDouble()),
+                            child: Center(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text("94",
-                                      style: TextStyle(
+                                  Text("${_summary['adherenceRate'] ?? 0}",
+                                      style: const TextStyle(
                                           fontSize: 28,
                                           fontWeight: FontWeight.bold)),
-                                  Text("TARGET 95",
+                                  const Text("TARGET 95",
                                       style: TextStyle(fontSize: 10)),
                                 ],
                               ),

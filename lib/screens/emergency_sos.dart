@@ -1,5 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 import 'caretaker_dashboard.dart';
 
 class EmergencySOSScreen extends StatefulWidget {
@@ -12,19 +14,23 @@ class EmergencySOSScreen extends StatefulWidget {
 class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
 
   bool isHolding = false;
+  bool _isSending = false;
   int seconds = 3;
   Timer? timer;
 
   void startSOS() {
+    if (_isSending) return;
     setState(() {
       isHolding = true;
       seconds = 3;
     });
 
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      setState(() {
-        seconds--;
-      });
+      if (seconds > 0) {
+        setState(() {
+          seconds--;
+        });
+      }
 
       if (seconds == 0) {
         t.cancel();
@@ -41,16 +47,37 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
     });
   }
 
-  void triggerSOS() {
+  Future<void> triggerSOS() async {
     setState(() {
       isHolding = false;
+      _isSending = true;
     });
 
+    try {
+        final response = await ApiService.post('/alerts/sos', {
+            'location': 'Ward A, Room 302', // Mock location for now
+            'note': 'Urgent caretaker assistance requested'
+        });
+        
+        if (response.statusCode == 201) {
+            _showSuccessDialog();
+        }
+    } catch (e) {
+        // Handle error
+    } finally {
+        setState(() {
+            _isSending = false;
+        });
+    }
+  }
+
+  void _showSuccessDialog() {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (_) => AlertDialog(
-        title: const Text("Admin Notified"),
-        content: const Text("Help is on the way. Stay calm."),
+        title: const Text("🚨 Admin Notified"),
+        content: const Text("SOS Alert sent to all Admin users. Help is on the way. Stay calm."),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -213,13 +240,13 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
                     backgroundColor: Colors.red,
                   ),
                   const SizedBox(width: 10),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text("Connecting to Help...",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
-                        Text("GPS Location active and shared",
+                        Text(_isSending ? "Sending Alert..." : "Connecting to Help...",
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const Text("GPS Location active and shared",
                             style: TextStyle(color: Colors.grey)),
                       ],
                     ),

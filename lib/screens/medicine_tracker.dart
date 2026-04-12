@@ -1,6 +1,10 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:saksham/models/medicine_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 import 'caretaker_dashboard.dart';
+import 'emergency_sos.dart';
 
 class MedicineTrackerScreen extends StatefulWidget {
   const MedicineTrackerScreen({super.key});
@@ -11,43 +15,51 @@ class MedicineTrackerScreen extends StatefulWidget {
 }
 
 class _MedicineTrackerScreenState extends State<MedicineTrackerScreen> {
+  bool _isLoading = true;
+  List<MedicineModel> medicines = [];
+  List<ResidentModel> residents = [];
+  ResidentModel? selectedResident;
 
-  List<Map<String, dynamic>> medicines = [
-    {
-      "name": "Metformin",
-      "desc": "500mg — After Breakfast (Diabetes)",
-      "time": "09:00 AM",
-      "status": "taken"
-    },
-    {
-      "name": "Amlodipine",
-      "desc": "5mg — Before Dinner (BP)",
-      "time": "08:00 PM",
-      "status": "pending"
-    },
-    {
-      "name": "Vitamin D3",
-      "desc": "60,000 IU — Once Weekly",
-      "time": "10:00 AM",
-      "status": "upcoming"
-    },
-    {
-      "name": "Aspirin",
-      "desc": "75mg — Blood Thinner (Heart)",
-      "time": "07:00 AM",
-      "status": "missed"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchMedicines();
+  }
 
-  void toggleStatus(int index) {
-    setState(() {
-      String current = medicines[index]["status"];
-      if (current == "taken" || current == "missed") {
-        medicines[index]["status"] = "pending";
-      } else {
-        medicines[index]["status"] = "taken";
+  Future<void> _fetchMedicines() async {
+    try {
+      final response = await ApiService.get('/medicines/today');
+      final resResponse = await ApiService.get('/residents');
+
+      if (response.statusCode == 200 && resResponse.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body)['data'];
+        final List<dynamic> resData = jsonDecode(resResponse.body)['data'];
+        setState(() {
+          medicines = data.map((json) => MedicineModel.fromJson(json)).toList();
+          residents = resData.map((json) => ResidentModel.fromJson(json)).toList();
+          _isLoading = false;
+        });
       }
-    });
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> toggleStatus(int index) async {
+    final med = medicines[index];
+    final newStatus = (med.status == 'taken' || med.status == 'missed') ? 'pending' : 'taken';
+    
+    try {
+      final response = await ApiService.put('/medicines/${med.id}', {
+        'status': newStatus
+      });
+      
+      if (response.statusCode == 200) {
+        _fetchMedicines(); // Refresh list to get updated status and CareLog trigger
+      }
+    } catch (e) {
+      // Handle error
+    }
   }
 
   String get _liveDate {
@@ -86,6 +98,16 @@ void openAddMedicineSheet() {
 
             const SizedBox(height: 15),
 
+            DropdownButtonFormField<ResidentModel>(
+              value: selectedResident,
+              items: residents.map((r) => DropdownMenuItem(
+                value: r,
+                child: Text("${r.name} (${r.room})"),
+              )).toList(),
+              onChanged: (val) => setState(() => selectedResident = val),
+              decoration: const InputDecoration(labelText: "Select Resident"),
+            ),
+
             TextField(
               controller: nameController,
               decoration: const InputDecoration(labelText: "Medicine Name"),
@@ -93,30 +115,32 @@ void openAddMedicineSheet() {
 
             TextField(
               controller: doseController,
-              decoration: const InputDecoration(labelText: "Dose"),
+              decoration: const InputDecoration(labelText: "Dose (e.g. 1 pill)"),
             ),
 
             TextField(
               controller: timeController,
-              decoration: const InputDecoration(labelText: "Time"),
+              decoration: const InputDecoration(labelText: "Time (e.g. 08:30 AM)"),
             ),
 
             const SizedBox(height: 20),
 
             ElevatedButton(
-              onPressed: () {
-                if (nameController.text.isEmpty) return;
+              onPressed: () async {
+                if (nameController.text.isEmpty || selectedResident == null) return;
 
-                setState(() {
-                  medicines.add({
-                    "name": nameController.text,
-                    "desc": doseController.text,
-                    "time": timeController.text,
-                    "status": "pending"
-                  });
+                final response = await ApiService.post('/medicines', {
+                    'resident': selectedResident!.id,
+                    'name': nameController.text,
+                    'dosage': doseController.text,
+                    'instructions': 'Taken at ${timeController.text}',
+                    'status': 'pending'
                 });
 
-                Navigator.pop(context);
+                if (response.statusCode == 201) {
+                    _fetchMedicines();
+                    Navigator.pop(context);
+                }
               },
               child: const Text("Save"),
             )
@@ -128,13 +152,13 @@ void openAddMedicineSheet() {
 }
 
   int get taken =>
-      medicines.where((m) => m["status"] == "taken").length;
-
+      medicines.where((m) => m.status == "taken").length;
+ 
   int get pending =>
-      medicines.where((m) => m["status"] == "pending").length;
-
+      medicines.where((m) => m.status == "pending" || m.status == "upcoming").length;
+ 
   int get missed =>
-      medicines.where((m) => m["status"] == "missed").length;
+      medicines.where((m) => m.status == "missed").length;
 
   @override
   Widget build(BuildContext context) {
@@ -192,7 +216,7 @@ void openAddMedicineSheet() {
                 const Text("AADHAR-LINKED HEALTH RECORD", style: TextStyle(color: Colors.grey)),
                 Text(_liveDate,
                     style:
-                        TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+                        const TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
 
                 const SizedBox(height: 20),
 
@@ -216,21 +240,24 @@ void openAddMedicineSheet() {
 
                 // 📋 LIST
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: medicines.length,
-                    itemBuilder: (context, index) {
-
-                      final m = medicines[index];
-
-                      if (m["status"] == "pending" || m["status"] == "upcoming") {
-                        return _pendingCard(m, index);
-                      } else if (m["status"] == "missed") {
-                        return _missedCard(m, index);
-                      } else {
-                        return _normalCard(m, index);
-                      }
-                    },
-                  ),
+                  child: _isLoading 
+                    ? const Center(child: CircularProgressIndicator())
+                    : RefreshIndicator(
+                        onRefresh: _fetchMedicines,
+                        child: ListView.builder(
+                          itemCount: medicines.length,
+                          itemBuilder: (context, index) {
+                            final m = medicines[index];
+                            if (m.status == "pending" || m.status == "upcoming") {
+                                return _pendingCard(m, index);
+                            } else if (m.status == "missed") {
+                                return _missedCard(m, index);
+                            } else {
+                                return _normalCard(m, index);
+                            }
+                          },
+                        ),
+                      ),
                 ),
 
                 const SizedBox(height: 10),
@@ -285,8 +312,7 @@ void openAddMedicineSheet() {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.blue,
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Emergency Triggered")));
+            Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencySOSScreen()));
         },
         child: const Icon(Icons.emergency),
       ),
@@ -330,7 +356,7 @@ void openAddMedicineSheet() {
   }
 
   // 🔹 NORMAL CARD
-  Widget _normalCard(Map m, int index) {
+  Widget _normalCard(MedicineModel m, int index) {
     return GestureDetector(
       onTap: () => toggleStatus(index),
       child: Container(
@@ -344,13 +370,13 @@ void openAddMedicineSheet() {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(m["desc"]),
+              Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(m.instructions),
             ]),
             Column(
               children: [
-                Text(m["status"].toUpperCase()),
-                Text(m["time"]),
+                Text(m.status.toUpperCase()),
+                Text(m.dosage),
               ],
             ),
           ],
@@ -360,7 +386,7 @@ void openAddMedicineSheet() {
   }
 
   // 🔹 PENDING CARD
-  Widget _pendingCard(Map m, int index) {
+  Widget _pendingCard(MedicineModel m, int index) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -374,8 +400,8 @@ void openAddMedicineSheet() {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
-              Text(m["time"], style: const TextStyle(color: Colors.blue)),
+              Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              Text(m.dosage, style: const TextStyle(color: Colors.blue)),
             ],
           ),
           const SizedBox(height: 10),
@@ -402,7 +428,7 @@ void openAddMedicineSheet() {
   }
 
   // 🔹 MISSED CARD
-  Widget _missedCard(Map m, int index) {
+  Widget _missedCard(MedicineModel m, int index) {
     return GestureDetector(
       onTap: () => toggleStatus(index),
       child: Container(
@@ -415,10 +441,10 @@ void openAddMedicineSheet() {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(m["name"], style: const TextStyle(fontWeight: FontWeight.bold)),
-            Text(m["desc"]),
+            Text(m.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(m.instructions),
             const SizedBox(height: 6),
-            Text("Missed at ${m["time"]}",
+            Text("Missed at ${m.dosage}",
                 style: const TextStyle(color: Colors.red)),
             const Text("⚠ Alert: Dose missed",
                 style: TextStyle(color: Colors.red)),

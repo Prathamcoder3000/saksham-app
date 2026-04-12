@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:saksham/models/resident_model.dart';
+import 'package:saksham/services/api_service.dart';
+import 'dart:convert';
 import 'family_vitals_screen.dart';
 import 'family_calendar_screen.dart';
 import 'family_settings_screen.dart';
@@ -17,6 +19,41 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
   static const bg = Color(0xFFF6FAFE);
 
   int _currentIndex = 0;
+  bool _isLoading = true;
+  ResidentModel? _resident;
+  int _completedMeds = 0;
+  int _totalMeds = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    try {
+      final res = await ApiService.get('/residents');
+      if (res.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(res.body)['data'];
+        if (data.isNotEmpty) {
+           _resident = ResidentModel.fromJson(data[0]);
+           
+           // Fetch meds for this resident
+           final medRes = await ApiService.get('/medicines/resident/${_resident!.id}');
+           if (medRes.statusCode == 200) {
+               final List<dynamic> meds = jsonDecode(medRes.body)['data'];
+               _totalMeds = meds.length;
+               _completedMeds = meds.where((m) => m['status'] == 'taken').length;
+           }
+        }
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,15 +62,19 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
       body: Stack(
         children: [
           // 🔻 DYNAMIC CONTENT BASED ON NAV
-          IndexedStack(
-            index: _currentIndex,
-            children: [
-              _buildHomeTab(),
-              const FamilyVitalsScreen(),
-              const FamilyCalendarScreen(),
-              const FamilySettingsScreen(),
-            ],
-          ),
+          _isLoading 
+            ? const Center(child: CircularProgressIndicator())
+            : IndexedStack(
+                index: _currentIndex,
+                children: [
+                   _resident == null 
+                     ? const Center(child: Text("No linked resident found."))
+                     : _buildHomeTab(),
+                  const FamilyVitalsScreen(),
+                  const FamilyCalendarScreen(),
+                  const FamilySettingsScreen(),
+                ],
+              ),
           _topBar(),
         ],
       ),
@@ -235,16 +276,16 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Ramesh\nSharma",
-                        style: TextStyle(
+                        _resident!.name.replaceAll(' ', '\n'),
+                        style: const TextStyle(
                             color: Colors.white,
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
                             fontFamily: "Lexend"),
                       ),
                       Text(
-                        "Room 402 • Maple Wing",
-                        style: TextStyle(
+                        "Room ${_resident!.room}",
+                        style: const TextStyle(
                             color: Colors.white70,
                             fontFamily: "Lexend"),
                       ),
@@ -389,8 +430,8 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "3 / 4",
-                    style: TextStyle(
+                    "$_completedMeds / $_totalMeds",
+                    style: const TextStyle(
                       fontSize: 32,
                       color: Color(0xFF2563EB),
                       fontWeight: FontWeight.bold,
@@ -410,7 +451,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
                     width: 80,
                     height: 80,
                     child: CircularProgressIndicator(
-                      value: 0.75,
+                      value: _totalMeds > 0 ? _completedMeds / _totalMeds : 0,
                       strokeWidth: 8,
                       backgroundColor: Colors.grey.shade300,
                       color: const Color(0xFF2563EB),

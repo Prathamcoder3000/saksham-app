@@ -4,6 +4,8 @@ import 'manage_staff.dart';
 import 'reports_screen.dart';
 import 'add_resident.dart';
 import 'admin_profile_screen.dart';
+import '../services/api_service.dart';
+import 'dart:convert';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -14,6 +16,31 @@ class DashboardScreen extends StatefulWidget {
 
 class _DashboardScreenState extends State<DashboardScreen> {
   int _currentIndex = 0;
+  bool _isLoading = true;
+  Map<String, dynamic> _summaryData = {};
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSummary();
+  }
+
+  Future<void> _fetchSummary() async {
+    try {
+      final response = await ApiService.get('/reports/summary');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _summaryData = data['data'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,15 +80,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                     // ── Stats Cards ──
                     _StatCard(
-                      label: 'Total Residents',
-                      value: '142',
-                      trailing: _BadgeWidget(label: '+4%', color: const Color(0xFF006B5F)),
+                      label: 'Today\'s Check-ins',
+                      value: '${_summaryData['dailyCheckins'] ?? 0}',
+                      trailing: _BadgeWidget(label: 'Live', color: const Color(0xFF006B5F)),
                     ),
                     const SizedBox(height: 12),
                     _StatCard(
                       label: 'Care Utilization',
-                      value: '88%',
-                      trailing: _ProgressBarWidget(value: 0.88),
+                      value: '${_summaryData['adherenceRate'] ?? 0}%',
+                      trailing: _ProgressBarWidget(value: (_summaryData['adherenceRate'] ?? 0) / 100.0),
                     ),
                     const SizedBox(height: 12),
                     _StatCard(
@@ -135,8 +162,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       child: _ActionCard(
                         icon: Icons.notifications_active,
                         title: 'Emergency Alerts',
-                        subtitle: 'Review active SOS triggers and incidents',
-                        isError: true,
+                        subtitle: '${_summaryData['activeAlerts'] ?? 0} active SOS triggers',
+                        isError: (_summaryData['activeAlerts'] ?? 0) > 0,
                       ),
                     ),
                     const SizedBox(height: 24),
