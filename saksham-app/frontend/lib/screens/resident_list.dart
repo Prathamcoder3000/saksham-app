@@ -1,6 +1,14 @@
+import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:provider/provider.dart';
 import 'package:saksham/models/resident_model.dart';
 import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
+import '../providers/auth_provider.dart';
+import 'add_resident.dart';
+import 'resident_profile.dart';
+import 'manage_staff.dart';
+import 'reports_screen.dart';
 
 class ResidentListScreen extends StatefulWidget {
   const ResidentListScreen({super.key});
@@ -23,51 +31,25 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
   }
 
   Future<void> _fetchResidents() async {
-    final demoResidents = [
-      ResidentModel(
-        id: "demo1",
-        name: "Samuel Johnson (Demo)",
-        age: 72,
-        gender: "Male",
-        room: "Room 102",
-        conditions: ["Hypertension", "Early Stage Dementia"],
-        allergies: ["Penicillin"],
-        contactName: "Miriam Johnson",
-        contactPhone: "+1 555-0102",
-      ),
-      ResidentModel(
-        id: "demo2",
-        name: "Esther Rao (Demo)",
-        age: 68,
-        gender: "Female",
-        room: "Room 304",
-        conditions: ["Diabetes Type 2", "Glaucoma"],
-        allergies: [],
-        contactName: "Arjun Rao",
-        contactPhone: "+1 555-0304",
-      ),
-    ];
-
     try {
       final response = await ApiService.get('/residents');
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body)['data'];
         setState(() {
-          final fetched = data.map((json) => ResidentModel.fromJson(json)).toList();
-          _residents = fetched.isEmpty ? demoResidents : fetched;
+          _residents = data.map((json) => ResidentModel.fromJson(json)).toList();
           _isLoading = false;
         });
       } else {
          setState(() {
-          _residents = demoResidents;
           _isLoading = false;
         });
       }
     } catch (e) {
-      setState(() {
-        _residents = demoResidents;
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -82,6 +64,47 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
           r.room.toLowerCase().contains(searchQuery.toLowerCase());
       return matchesSearch;
     }).toList();
+  }
+
+  Future<void> _confirmDelete(BuildContext context, String id, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to permanently remove $name and all their care records?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      _deleteResident(id);
+    }
+  }
+
+  Future<void> _deleteResident(String id) async {
+    try {
+      final response = await ApiService.delete('/residents/$id');
+      if (response.statusCode == 200) {
+        _fetchResidents();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Resident deleted successfully')),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to delete resident')),
+        );
+      }
+    }
   }
 
   @override
@@ -398,7 +421,17 @@ class ResidentCard extends StatelessWidget {
           ),
         ),
 
-        const Icon(Icons.chevron_right, color: Colors.grey),
+         Consumer<AuthProvider>(
+           builder: (context, auth, child) {
+             if (auth.user?.role != 'Admin') return const SizedBox.shrink();
+             return GestureDetector(
+               onTap: () => _confirmDelete(context, id, name),
+               child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
+             );
+           },
+         ),
+         const SizedBox(height: 8),
+         const Icon(Icons.chevron_right, color: Colors.grey),
       ],
     ),
   ),

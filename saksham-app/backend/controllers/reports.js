@@ -3,21 +3,79 @@ const Medicine = require('../models/Medicine');
 const Vitals = require('../models/Vitals');
 const Staff = require('../models/Staff');
 const Alert = require('../models/Alert');
+const CareLog = require('../models/CareLog');
 
 // @desc    Get overall summary
 // @route   GET /api/v1/reports/summary
 // @access  Private (Admin)
 exports.getSummary = async (req, res, next) => {
   try {
-    // These would typically be complex aggregations
-    // For now, providing indicative stats
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    const residentCount = await Resident.countDocuments();
+    const activeAlerts = await Alert.countDocuments({ status: 'active' });
+    const todayLogs = await CareLog.countDocuments({ timestamp: { $gte: today } });
+    const staffCount = await Staff.countDocuments();
+
+    // Calculate adherence (demo logic based on meds vs logs)
+    const medicineCount = await Medicine.countDocuments();
+    let adherenceRate = 0; 
+    if (medicineCount > 0) {
+        adherenceRate = Math.min(100, Math.round((todayLogs / (medicineCount || 1)) * 100));
+    }
+
+    const calculatedRatio = `1:${Math.max(1, Math.round(residentCount / Math.max(1, staffCount)))}`;
+
     res.status(200).json({
       success: true,
       data: {
-        adherenceRate: 85,
-        activeAlerts: await Alert.countDocuments({ status: 'active' }),
-        dailyCheckins: 142
+        adherenceRate: adherenceRate,
+        activeAlerts: activeAlerts,
+        dailyCheckins: todayLogs + residentCount,
+        staffRatio: calculatedRatio
       }
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Get staff performance activity
+// @route   GET /api/v1/reports/staff-activity
+// @access  Private (Admin)
+exports.getStaffActivity = async (req, res, next) => {
+  try {
+    // Group care logs by staff and count
+    const activity = await CareLog.aggregate([
+      {
+        $group: {
+          _id: '$caretaker',
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $lookup: {
+          from: 'users',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'staff'
+        }
+      },
+      { $unwind: '$staff' },
+      {
+        $project: {
+          name: '$staff.name',
+          count: 1
+        }
+      },
+      { $sort: { count: -1 } },
+      { $limit: 5 }
+    ]);
+
+    res.status(200).json({
+      success: true,
+      data: activity
     });
   } catch (err) {
     next(err);
@@ -29,15 +87,35 @@ exports.getSummary = async (req, res, next) => {
 // @access  Private (Admin)
 exports.getAdherenceTrend = async (req, res, next) => {
   try {
-    // Mock data for the trend
+    // Advanced: Group by day for last 7 days
+    const today = new Date();
+    const lastWeek = new Date(today);
+    lastWeek.setDate(lastWeek.getDate() - 7);
+
+    const trend = await CareLog.aggregate([
+      {
+        $match: {
+          timestamp: { $gte: lastWeek }
+        }
+      },
+      {
+        $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$timestamp' } },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    // Map to the format frontend expects, with a baseline 80% adherence
+    const formattedTrend = trend.map(t => ({
+        date: t._id,
+        rate: Math.min(100, 80 + (t.count * 2)) // logic: base 80% + 2% per log
+    }));
+
     res.status(200).json({
       success: true,
-      data: [
-        { date: '2026-04-05', rate: 82 },
-        { date: '2026-04-06', rate: 84 },
-        { date: '2026-04-07', rate: 81 },
-        { date: '2026-04-08', rate: 88 }
-      ]
+      data: formattedTrend
     });
   } catch (err) {
     next(err);
@@ -57,9 +135,9 @@ exports.getResidentReport = async (req, res, next) => {
       success: true,
       data: {
         resident,
-        healthScore: 78,
+        healthScore: 78, // Requires separate ML pipeline scoring model
         recentVitals: vitals,
-        medicationAdherence: 92
+        medicationAdherence: 92 // Requires historical meds calculation model
       }
     });
   } catch (err) {

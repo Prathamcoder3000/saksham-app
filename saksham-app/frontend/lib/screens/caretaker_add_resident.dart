@@ -11,20 +11,44 @@ class CaretakerAddResidentScreen extends StatefulWidget {
 class _CaretakerAddResidentScreenState
     extends State<CaretakerAddResidentScreen> {
 
-  final nameController = TextEditingController();
-  final ageController = TextEditingController();
-  final conditionController = TextEditingController();
-  final contactController = TextEditingController();
-  final phoneController = TextEditingController();
+  final roomController = TextEditingController();
+  bool _isSaving = false;
 
-  void save() {
+  Future<void> save() async {
     if (nameController.text.isEmpty) return;
 
-    Navigator.pop(context, {
-      "name": nameController.text,
-      "room": "Room 000 • New Wing",
-      "status": "stable",
-    });
+    setState(() => _isSaving = true);
+    try {
+      final response = await ApiService.post('/caretaker/residents', {
+        "name": nameController.text,
+        "age": int.tryParse(ageController.text) ?? 0,
+        "room": roomController.text.isEmpty ? "New Wing" : roomController.text,
+        "conditions": conditionController.text.split(','),
+        "emergencyContactName": contactController.text,
+        "emergencyContactPhone": phoneController.text,
+      });
+
+      if (response.statusCode == 201) {
+        final newResident = jsonDecode(response.body)['data'];
+        if (mounted) {
+           ScaffoldMessenger.of(context).showSnackBar(
+             const SnackBar(content: Text("Resident added!"), backgroundColor: Colors.green),
+           );
+           Navigator.pop(context, newResident);
+        }
+      } else {
+        final data = jsonDecode(response.body);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? "Error adding resident")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Connection error")),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -98,6 +122,7 @@ class _CaretakerAddResidentScreenState
                   children: [
                     _field("Full Name", nameController),
                     _field("Age", ageController),
+                    _field("Room Number", roomController),
                   ],
                 ),
               ),
@@ -130,7 +155,7 @@ class _CaretakerAddResidentScreenState
 
               // 💾 SAVE
               GestureDetector(
-                onTap: save,
+                onTap: _isSaving ? null : save,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
@@ -138,14 +163,16 @@ class _CaretakerAddResidentScreenState
                     color: const Color(0xFF1E293B),
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.person_add, color: Colors.white),
-                      SizedBox(width: 8),
+                      _isSaving 
+                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                        : const Icon(Icons.person_add, color: Colors.white),
+                      const SizedBox(width: 8),
                       Text(
-                        "Save Resident",
-                        style: TextStyle(
+                        _isSaving ? "Saving..." : "Save Resident",
+                        style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold),
                       ),

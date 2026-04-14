@@ -1,7 +1,42 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'dart:convert';
+import 'package:intl/intl.dart';
 
-class FamilyCalendarScreen extends StatelessWidget {
+class FamilyCalendarScreen extends StatefulWidget {
   const FamilyCalendarScreen({super.key});
+
+  @override
+  State<FamilyCalendarScreen> createState() => _FamilyCalendarScreenState();
+}
+
+class _FamilyCalendarScreenState extends State<FamilyCalendarScreen> {
+  bool _isLoading = true;
+  List<dynamic> _appointments = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchEvents();
+  }
+
+  Future<void> _fetchEvents() async {
+    try {
+      final res = await ApiService.get('/appointments');
+      if (res.statusCode == 200) {
+        if (mounted) {
+          setState(() {
+            _appointments = jsonDecode(res.body)['data'];
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,47 +60,56 @@ class FamilyCalendarScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
 
-          // Date Selector Mock
+          // Date Selector
           Row(
-            children: [
-              _dateCard("Mon", "12", false),
-              _dateCard("Tue", "13", true),
-              _dateCard("Wed", "14", false),
-              _dateCard("Thu", "15", false),
-            ],
+            children: List.generate(4, (index) {
+              final date = DateTime.now().add(Duration(days: index));
+              final dayStr = DateFormat('EEE').format(date);
+              final dateStr = DateFormat('dd').format(date);
+              return _dateCard(dayStr, dateStr, index == 0);
+            }),
           ),
           const SizedBox(height: 30),
 
           // Events
-          const Text(
-            "Tuesday, Oct 13",
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: "Lexend"),
+          Text(
+            DateFormat('EEEE, MMM dd').format(DateTime.now()),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: "Lexend"),
           ),
           const SizedBox(height: 16),
 
-          _eventItem(
-            time: "09:00 AM",
-            title: "Morning Medication",
-            subtitle: "Administered by Nurse Elena",
-            color: Colors.blue,
-            icon: Icons.medication,
-          ),
-          const SizedBox(height: 16),
-          _eventItem(
-            time: "11:30 AM",
-            title: "Doctor Appointment",
-            subtitle: "Dr. Smith - Checkup",
-            color: Colors.teal,
-            icon: Icons.medical_services,
-          ),
-          const SizedBox(height: 16),
-          _eventItem(
-            time: "02:00 PM",
-            title: "Physiotherapy",
-            subtitle: "30 mins walking exercise",
-            color: Colors.orange,
-            icon: Icons.directions_walk,
-          ),
+          if (_isLoading)
+            const Center(child: CircularProgressIndicator())
+          else if (_appointments.isEmpty)
+             Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: const Center(child: Text("No upcoming appointments scheduled yet.")),
+            ),
+          
+          if (!_isLoading && _appointments.isNotEmpty)
+            ..._appointments.map((app) {
+              DateTime d = DateTime.now();
+              if (app['date'] != null) {
+                  d = DateTime.parse(app['date']);
+              }
+              final timeStr = DateFormat('hh:mm a').format(d);
+              return Column(
+                children: [
+                  _eventItem(
+                    time: timeStr,
+                    title: app['title'] ?? 'Appointment',
+                    subtitle: app['status'] ?? 'Scheduled',
+                    color: Colors.teal,
+                    icon: Icons.medical_services,
+                  ),
+                  const SizedBox(height: 16),
+                ]
+              );
+            }).toList(),
         ],
       ),
     );
@@ -120,19 +164,22 @@ class FamilyCalendarScreen extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Column(
-            children: [
-              Text(
-                time.split(" ")[0],
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: "Lexend"),
-              ),
-              Text(
-                time.split(" ")[1],
-                style: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: "Lexend"),
-              ),
-            ],
+          Expanded(
+            flex: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  time.split(" ")[0],
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: "Lexend"),
+                ),
+                Text(
+                  time.split(" ").length > 1 ? time.split(" ")[1] : "",
+                  style: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: "Lexend"),
+                ),
+              ],
+            ),
           ),
-          const SizedBox(width: 16),
           Container(
             width: 4,
             height: 40,
@@ -143,6 +190,7 @@ class FamilyCalendarScreen extends StatelessWidget {
           ),
           const SizedBox(width: 16),
           Expanded(
+            flex: 6,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -163,3 +211,4 @@ class FamilyCalendarScreen extends StatelessWidget {
     );
   }
 }
+

@@ -1,9 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:saksham/models/resident_model.dart';
 import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
 import 'family_vitals_screen.dart';
 import 'family_calendar_screen.dart';
 import 'family_settings_screen.dart';
+import 'chat_screen.dart';
+import '../providers/auth_provider.dart';
+import 'package:provider/provider.dart';
 
 class FamilyDashboard extends StatefulWidget {
   const FamilyDashboard({super.key});
@@ -24,6 +28,8 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
   int _completedMeds = 0;
   int _totalMeds = 0;
 
+  List<dynamic> _recentLogs = [];
+
   @override
   void initState() {
     super.initState();
@@ -38,12 +44,18 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
         if (data.isNotEmpty) {
            _resident = ResidentModel.fromJson(data[0]);
            
-           // Fetch meds for this resident
-           final medRes = await ApiService.get('/medicines/resident/${_resident!.id}');
+           // Fetch meds status
+           final medRes = await ApiService.get('/medicines/today?residentId=${_resident!.id}');
            if (medRes.statusCode == 200) {
                final List<dynamic> meds = jsonDecode(medRes.body)['data'];
                _totalMeds = meds.length;
-               _completedMeds = meds.where((m) => m['status'] == 'taken').length;
+               _completedMeds = meds.where((m) => m['currentStatus'] == 'taken').length;
+           }
+
+           // Fetch real logs
+           final logsRes = await ApiService.get('/care-logs?residentId=${_resident!.id}');
+           if (logsRes.statusCode == 200) {
+               _recentLogs = jsonDecode(logsRes.body)['data'];
            }
         }
         setState(() {
@@ -51,7 +63,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
         });
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -272,7 +284,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
@@ -321,7 +333,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
           const Spacer(),
           Row(
             crossAxisAlignment: CrossAxisAlignment.end,
-            children: const [
+            children: [
               Text(
                 "72",
                 style: TextStyle(
@@ -410,7 +422,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
@@ -493,6 +505,14 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
 
   // 🕒 TIMELINE
   Widget _timeline() {
+    if (_recentLogs.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
+        child: const Center(child: Text("No recent moments logged yet.")),
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -500,128 +520,68 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
         borderRadius: BorderRadius.circular(22),
       ),
       child: Column(
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Column(
-                children: [
-                  Container(
-                    width: 12,
-                    height: 12,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFF2563EB),
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Container(
-                    width: 2,
-                    height: 90,
-                    color: const Color(0xFFE5E7EB),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        children: _recentLogs.map((log) {
+          final timeStr = log['timestamp'] != null 
+              ? log['timestamp'].toString().substring(11, 16) 
+              : '--:--';
+          
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
                   children: [
-                    const Text(
-                      "10:45 AM",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontFamily: "Lexend",
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: BoxDecoration(
+                        color: log['type'] == 'medication' ? Colors.green : const Color(0xFF2563EB),
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Activity Log",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        fontFamily: "Lexend",
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Ramesh enjoyed a morning walk in the central garden with Priya. He seemed very cheerful today.",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                        fontFamily: "Lexend",
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child: Image.network(
-                        "https://images.unsplash.com/photo-1501004318641-b39e6451bec6",
-                        height: 60,
-                        width: 60,
-                        fit: BoxFit.cover,
-                      ),
+                    Container(
+                      width: 2,
+                      height: 40,
+                      color: const Color(0xFFE5E7EB),
                     ),
                   ],
                 ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 12,
-                height: 12,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF006B5F),
-                  shape: BoxShape.circle,
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        timeStr,
+                        style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: "Lexend"),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        log['title'] ?? "Care Activity",
+                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: "Lexend"),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        log['description'] ?? "",
+                        style: const TextStyle(fontSize: 13, color: Colors.black87, fontFamily: "Lexend"),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      "08:30 AM",
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                        fontFamily: "Lexend",
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Health Check",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w700,
-                        fontSize: 15,
-                        fontFamily: "Lexend",
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      "Vitals recorded by Nurse Elena. Blood pressure is within normal range (128/84).",
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: Colors.black87,
-                        fontFamily: "Lexend",
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }
 
   // 👩‍⚕️ CARETAKER
   Widget _caretakerCard() {
+    final ct = _resident?.assignedCaretaker;
+    final ctName = ct != null ? ct['name'] : "Facility Staff";
+    
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
@@ -648,27 +608,27 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
             ),
             child: ClipOval(
               child: Image.network(
-                "https://i.pravatar.cc/150?img=47",
+                "https://i.pravatar.cc/150?u=${ct?['email'] ?? 'default'}",
                 fit: BoxFit.cover,
               ),
             ),
           ),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Caretaker Elena",
-                  style: TextStyle(
+                  ctName,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                     fontFamily: "Lexend",
                   ),
                 ),
-                Text(
-                  "On Duty until 6 PM",
+                const Text(
+                  "Assigned Caretaker",
                   style: TextStyle(
                     color: Colors.white70,
                     fontSize: 12,
@@ -688,14 +648,29 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
             child: const Icon(Icons.call, color: Color(0xFF2563EB)),
           ),
           const SizedBox(width: 10),
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: Colors.white24,
-              shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () {
+              if (ct == null) return;
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ChatScreen(
+                    recipientId: ct['id'] ?? ct['_id'],
+                    recipientName: ctName,
+                    conversationId: "conv_${_resident!.id}_family", 
+                  ),
+                ),
+              );
+            },
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: const BoxDecoration(
+                color: Colors.white24,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(Icons.chat, color: Colors.white),
             ),
-            child: const Icon(Icons.chat, color: Colors.white),
           ),
         ],
       ),

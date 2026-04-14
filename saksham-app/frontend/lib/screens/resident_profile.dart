@@ -1,6 +1,11 @@
+import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'package:saksham/models/resident_model.dart';
 import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
+import 'edit_resident.dart';
+import 'resident_list.dart';
+import 'reports_screen.dart';
 
 class ResidentProfileScreen extends StatefulWidget {
   final String residentId;
@@ -84,13 +89,14 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
                         ],
                       ),
                       GestureDetector(
-                        onTap: () {
-                            Navigator.push(
+                        onTap: () async {
+                            final updated = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const EditResidentScreen(),
+                                builder: (context) => EditResidentScreen(residentId: widget.residentId),
                             ),
                             );
+                            if (updated == true) _fetchDetails();
                         },
                         child: const Icon(Icons.edit, color: Colors.blue),
                         ),
@@ -108,121 +114,125 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
               child: Column(
                 children: [
 
-                  // 👤 PROFILE HEADER
-                  Column(
-                    children: [
-                      Stack(
+                      // 👤 PROFILE HEADER
+                      Column(
                         children: [
-                          Container(
-                            width: 150,
-                            height: 150,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white, width: 4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.blue.withOpacity(0.1),
-                                  blurRadius: 20,
-                                )
-                              ],
-                              image: const DecorationImage(
-                                image: NetworkImage("https://i.pravatar.cc/300"),
-                                fit: BoxFit.cover,
-                              ),
-                            ),
-                          ),
-
-                          Positioned(
-                            bottom: -10,
-                            right: -10,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 6),
-                              decoration: BoxDecoration(
-                                color: Colors.blue,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                "ROOM ${_resident!.room}",
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
+                          Stack(
+                            children: [
+                              Container(
+                                width: 150,
+                                height: 150,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(color: Colors.white, width: 4),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.blue.withOpacity(0.1),
+                                      blurRadius: 20,
+                                    )
+                                  ],
+                                  image: DecorationImage(
+                                    image: NetworkImage(_resident!.photoUrl != null 
+                                       ? (ApiService.baseUrl.contains('10.0.2.2') 
+                                          ? _resident!.photoUrl!.replaceAll('localhost', '10.0.2.2') 
+                                          : _resident!.photoUrl!)
+                                       : "https://i.pravatar.cc/300?u=${_resident!.id}"),
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
-                            ),
-                          ),
-                        ],
-                      ),
 
-                      const SizedBox(height: 20),
-
-                      const Text(
-                        "RESIDENT STATUS: ACTIVE",
-                        style: TextStyle(
-                          color: Colors.green,
-                          letterSpacing: 2,
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Text(
-                        _resident!.name,
-                        style: const TextStyle(
-                          fontSize: 26,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-
-                      const SizedBox(height: 10),
-
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFEAEFF3),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text("${_resident!.age} Years Old"),
+                              Positioned(
+                                bottom: -10,
+                                right: -10,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 14, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Text(
+                                    "ROOM ${_resident!.room}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
 
-                          const SizedBox(width: 10),
+                          const SizedBox(height: 20),
+
+                          const Text(
+                            "RESIDENT STATUS: ACTIVE",
+                            style: TextStyle(
+                              color: Colors.green,
+                              letterSpacing: 2,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
+
+                          Text(
+                            _resident!.name,
+                            style: const TextStyle(
+                              fontSize: 26,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+
+                          const SizedBox(height: 10),
 
                           Row(
-                            children: const [
-                              Icon(Icons.verified, size: 16, color: Colors.blue),
-                              SizedBox(width: 4),
-                              Text(
-                                "Premium Care Tier",
-                                style: TextStyle(color: Colors.blue),
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 6),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFEAEFF3),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: Text("${_resident!.age} Years Old"),
+                              ),
+
+                              const SizedBox(width: 10),
+
+                              Row(
+                                children: const [
+                                  Icon(Icons.verified, size: 16, color: Colors.blue),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    "Premium Care Tier",
+                                    style: TextStyle(color: Colors.blue),
+                                  ),
+                                ],
                               ),
                             ],
                           ),
                         ],
                       ),
-                    ],
-                  ),
 
-                  const SizedBox(height: 30),
+                      const SizedBox(height: 30),
 
-                  // 🧍 PERSONAL DETAILS
-                  _card(
-                    icon: Icons.person,
-                    title: "Personal Details",
-                    child: Column(
-                      children: const [
-                        _info("DATE OF BIRTH", "14 May 1941"),
-                        _info("GENDER", "Male"),
-                        _info("ADMISSION DATE", "12 October 2022"),
-                      ],
-                    ),
-                  ),
+                      // 🧍 PERSONAL DETAILS
+                      _card(
+                        icon: Icons.person,
+                        title: "Personal Details",
+                        child: Column(
+                          children: [
+                            _info("GENDER", _resident!.gender),
+                            _info("ADMISSION DATE", _resident!.admissionDate?.substring(0, 10) ?? "--"),
+                            const _info("STATUS", "Resident in care"),
+                          ],
+                        ),
+                      ),
 
                   const SizedBox(height: 20),
 
@@ -242,7 +252,7 @@ class _ResidentProfileScreenState extends State<ResidentProfileScreen> {
 
                         Wrap(
                           spacing: 8,
-                          children: const [
+                          children: [
                             ..._resident!.conditions.map((c) => _chip(c)).toList(),
                           ],
                         ),

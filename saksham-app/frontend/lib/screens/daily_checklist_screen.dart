@@ -37,7 +37,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
 
   Future<void> toggleTask(int index) async {
     final task = tasks[index];
-    final newStatus = task.status == 'completed' ? 'pending' : 'completed';
+    final newStatus = task.status == 'done' ? 'upcoming' : 'done';
     
     try {
         final response = await ApiService.put('/tasks/${task.id}', {
@@ -53,14 +53,12 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
   }
 
   int get total => tasks.length;
-  int get done => tasks.where((t) => t.status == "completed").length;
+  int get done => tasks.where((t) => t.status == "done").length;
   int get left => total - done;
 
   String get _liveDate {
     final now = DateTime.now();
-    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    return '${days[now.weekday - 1]}, ${now.day} ${months[now.month - 1]}';
+    return "${now.day}/${now.month}/${now.year}";
   }
 
   @override
@@ -82,8 +80,8 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
                     child: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
                   const SizedBox(width: 10),
-                  const Text("Daily Checklist",
-                          style: TextStyle(
+                  Text(context.l10n.daily_checklist,
+                          style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 18,
                               color: Colors.blue)),
@@ -225,7 +223,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
   Widget _taskCard(int index) {
     final task = tasks[index];
 
-    bool isDone = task.status == "completed";
+    bool isDone = task.status == "done";
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
@@ -233,7 +231,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: task.status == "in-progress"
+        border: task.status == "progress"
             ? const Border(left: BorderSide(color: Colors.blue, width: 4))
             : null,
       ),
@@ -257,7 +255,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
               Text(
                 "${task.residentName} (${task.residentRoom}) • ${_statusText(task.status)}",
                 style: TextStyle(
-                  color: task.status == "in-progress"
+                  color: task.status == "progress"
                       ? Colors.blue
                       : Colors.grey,
                 ),

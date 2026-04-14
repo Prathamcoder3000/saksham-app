@@ -1,10 +1,13 @@
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 import 'loading_screen.dart';
 import 'forgot_password.dart';
 import 'dashboard_screen.dart';
 import 'caretaker_dashboard.dart';
 import 'family_dashboard.dart';
+import 'role_selection.dart';
 
 class LoginScreen extends StatefulWidget {
   final String role;
@@ -32,11 +35,23 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
 
       if (success) {
-        // Navigate based on role (ensuring it matches the selected role or returned role)
-        final role = authProvider.user?.role ?? widget.role;
+        final backendRole = authProvider.user?.role ?? '';
+        final selectedRole = widget.role.toLowerCase();
+        
+        // Show message if user chose "wrong" entry point
+        if (backendRole.toLowerCase() != selectedRole) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Logging in as $backendRole..."),
+              backgroundColor: Colors.blueAccent,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
+
         Widget nextScreen;
         
-        switch (role) {
+        switch (backendRole) {
           case 'Admin':
             nextScreen = const DashboardScreen();
             break;
@@ -56,8 +71,8 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Invalid credentials. Please try again.'),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.invalidCredentials),
             backgroundColor: Colors.red,
           ),
         );
@@ -100,18 +115,18 @@ class _LoginScreenState extends State<LoginScreen> {
                   ],
                 ),
                 const Spacer(),
-                const Text(
-                  "Login",
-                  style: TextStyle(
+                Text(
+                  AppLocalizations.of(context)!.login,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontSize: 40,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
-                  "Welcome back to your digital sanctuary.",
-                  style: TextStyle(color: Colors.white70),
+                Text(
+                  AppLocalizations.of(context)!.welcomeBack,
+                  style: const TextStyle(color: Colors.white70),
                 ),
               ],
             ),
@@ -132,12 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Email
-                      const Text("Email Address"),
+                      Text(AppLocalizations.of(context)!.email),
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _emailController,
                         validator: (value) => value == null || value.isEmpty
-                            ? "Please enter your email"
+                            ? AppLocalizations.of(context)!.emailRequired
                             : null,
                         decoration: InputDecoration(
                           hintText: "name@example.com",
@@ -153,13 +168,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 20),
 
                       // Password
-                      const Text("Password"),
+                      Text(AppLocalizations.of(context)!.password),
                       const SizedBox(height: 10),
                       TextFormField(
                         controller: _passwordController,
                         obscureText: true,
                         validator: (value) => value == null || value.isEmpty
-                            ? "Please enter your password"
+                            ? AppLocalizations.of(context)!.passwordRequired
                             : null,
                         decoration: InputDecoration(
                           hintText: "••••••••",
@@ -186,9 +201,9 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                             );
                           },
-                          child: const Text(
-                            "Forgot Password?",
-                            style: TextStyle(
+                          child: Text(
+                            AppLocalizations.of(context)!.forgotPassword,
+                            style: const TextStyle(
                               color: Color(0xFF2563EB),
                               fontWeight: FontWeight.w600,
                             ),
@@ -225,10 +240,10 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ? const CircularProgressIndicator(color: Colors.white)
                                   : Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
-                                      children: const [
+                                      children: [
                                         Text(
-                                          "Login",
-                                          style: TextStyle(
+                                          AppLocalizations.of(context)!.login,
+                                          style: const TextStyle(
                                             color: Colors.white,
                                             fontSize: 18,
                                           ),
@@ -246,11 +261,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       // Divider
                       Row(
-                        children: const [
+                        children: [
                           Expanded(child: Divider()),
                           Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text("OR CONTINUE WITH"),
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(AppLocalizations.of(context)!.orContinueWith),
                           ),
                           Expanded(child: Divider()),
                         ],
@@ -270,11 +285,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       Center(
                         child: Text.rich(
                           TextSpan(
-                            text: "Don't have an account? ",
-                            children: const [
+                            text: AppLocalizations.of(context)!.dontHaveAccount,
+                            children: [
                               TextSpan(
-                                text: "Create Account",
-                                style: TextStyle(
+                                text: AppLocalizations.of(context)!.createAccount,
+                                style: const TextStyle(
                                   color: Color(0xFF2563EB),
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -287,10 +302,10 @@ class _LoginScreenState extends State<LoginScreen> {
 
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: const [
-                          Text("Help"),
-                          Text("Privacy"),
-                          Text("Terms"),
+                        children: [
+                          Text(AppLocalizations.of(context)!.help),
+                          Text(AppLocalizations.of(context)!.privacy),
+                          Text(AppLocalizations.of(context)!.terms),
                         ],
                       )
                     ],

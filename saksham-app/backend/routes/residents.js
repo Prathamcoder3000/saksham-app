@@ -28,7 +28,11 @@ router
   .delete(authorize('Admin'), deleteResident);
 
 // Caretaker scoped routes
-router.post('/caretaker-add', authorize('Caretaker'), caretakerCreateResident); // API spec has /caretaker/residents but for routing clarity we use aliases
+router.post('/caretaker-add', authorize('Caretaker'), caretakerCreateResident);
 router.put('/caretaker-edit/:id', authorize('Caretaker'), caretakerUpdateResident);
+
+// Also expose under the documented caretaker path
+router.put('/caretaker/:id', authorize('Caretaker'), caretakerUpdateResident);
+
 
 module.exports = router;

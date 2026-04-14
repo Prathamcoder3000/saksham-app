@@ -104,11 +104,11 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Chip(label: Text("82 Years")),
-                      SizedBox(width: 10),
-                      Chip(
-                        label: Text("Premium Care"),
+                    children: [
+                      Chip(label: Text("${data["age"] ?? "N/A"} Years")),
+                      const SizedBox(width: 10),
+                      const Chip(
+                        label: Text("Active Care"),
                         avatar: Icon(Icons.verified, size: 16),
                       ),
                     ],
@@ -123,10 +123,10 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
                 title: "Personal Info",
                 icon: Icons.person,
                 child: Column(
-                  children: const [
-                    _info("DOB", "May 14, 1941"),
-                    _info("Gender", "Male"),
-                    _info("Admission", "Oct 12, 2022"),
+                  children: [
+                    _info("Emergency Contact", data["emergencyContactName"] ?? "None"),
+                    _info("Phone", data["emergencyContactPhone"] ?? "N/A"),
+                    _info("Status", data["status"]?.toUpperCase() ?? "STABLE"),
                   ],
                 ),
               ),
@@ -141,32 +141,23 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-
-                    const Text("Conditions"),
+                    const Text("Conditions", style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-
-                    Wrap(
-                      spacing: 8,
-                      children: const [
-                        _chip("Hypertension"),
-                        _chip("Dementia"),
-                      ],
-                    ),
-
-                    const SizedBox(height: 10),
-
-                    const Text("Allergy",
-                        style: TextStyle(color: Colors.red)),
-                    const Text("Penicillin (High Risk)",
-                        style: TextStyle(color: Colors.red)),
-
-                    const SizedBox(height: 10),
-
-                    const Text("Medication"),
+                    if (data["conditions"] != null && data["conditions"]!.isNotEmpty)
+                      Wrap(
+                        spacing: 8,
+                        children: data["conditions"]!.split(',').map((c) => _chip(c.trim())).toList(),
+                      )
+                    else
+                      const Text("No conditions listed", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                    const SizedBox(height: 15),
+                    const Text("Allergies", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                    Text(data["allergies"] != null && data["allergies"]!.isNotEmpty ? data["allergies"]! : "None",
+                        style: const TextStyle(color: Colors.red)),
+                    const SizedBox(height: 15),
+                    const Text("Recent Activity", style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-
-                    _med("Lisinopril", "8:00 AM"),
-                    _med("Donepezil", "8:00 PM"),
+                    const Text("View full history in Activity Feed", style: TextStyle(fontSize: 12, color: Colors.blue)),
                   ],
                 ),
               ),

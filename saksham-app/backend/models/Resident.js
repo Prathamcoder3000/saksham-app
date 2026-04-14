@@ -47,6 +47,7 @@ ResidentSchema.pre('deleteOne', { document: true, query: false }, async function
     await this.model('Task').deleteMany({ resident: this._id });
     await this.model('CareLog').deleteMany({ resident: this._id });
     await this.model('Appointment').deleteMany({ resident: this._id });
+    await this.model('Vitals').deleteMany({ resident: this._id });
     next();
 });
 

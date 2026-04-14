@@ -13,6 +13,13 @@ class ApiService {
       : 'http://localhost:5000/api/v1';
   }
 
+  static String get socketUrl {
+    if (kIsWeb) return 'http://localhost:5000';
+    return (defaultTargetPlatform == TargetPlatform.android) 
+      ? 'http://10.0.2.2:5000' 
+      : 'http://localhost:5000';
+  }
+
   // Helper to get token
   static Future<String?> getToken() async {
     final prefs = await SharedPreferences.getInstance();
@@ -22,18 +29,39 @@ class ApiService {
   // Global callback for unauthorized access
   static VoidCallback? onUnauthorized;
 
-  // GET Request
+  // GET Request with Caching
   static Future<http.Response> get(String endpoint) async {
     final token = await getToken();
-    final response = await http.get(
-      Uri.parse('$baseUrl$endpoint'),
-      headers: {
-        'Content-Type': 'application/json',
-        if (token != null) 'Authorization': 'Bearer $token',
-      },
-    );
-    _handleResponse(response);
-    return response;
+    final prefs = await SharedPreferences.getInstance();
+
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl$endpoint'),
+        headers: {
+          'Content-Type': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      ).timeout(const Duration(seconds: 5));
+
+      if (response.statusCode == 200) {
+        // Cache successful GET requests
+        await prefs.setString('cache_$endpoint', response.body);
+      }
+
+      _handleResponse(response);
+      return response;
+    } catch (e) {
+      // Offline fallback: Return cached data if available
+      final cachedData = prefs.getString('cache_$endpoint');
+      if (cachedData != null) {
+        print('Offline: Returning cached data for $endpoint');
+        return http.Response(cachedData, 200, headers: {
+          'Content-Type': 'application/json',
+          'x-offline-cache': 'true',
+        });
+      }
+      rethrow;
+    }
   }
 
   // POST Request

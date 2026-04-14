@@ -4,6 +4,7 @@ import 'manage_staff.dart';
 import 'reports_screen.dart';
 import 'add_resident.dart';
 import 'admin_profile_screen.dart';
+import 'analytics_screen.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
 
@@ -19,6 +20,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoading = true;
   Map<String, dynamic> _summaryData = {};
 
+  List<dynamic> _recentLogs = [];
+
   @override
   void initState() {
     super.initState();
@@ -27,14 +30,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   Future<void> _fetchSummary() async {
     try {
-      final response = await ApiService.get('/reports/summary');
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        setState(() {
-          _summaryData = data['data'];
-          _isLoading = false;
-        });
+      final summaryRes = await ApiService.get('/reports/summary');
+      final logsRes = await ApiService.get('/care-logs?limit=3');
+      
+      if (summaryRes.statusCode == 200) {
+        _summaryData = jsonDecode(summaryRes.body)['data'];
       }
+      
+      if (logsRes.statusCode == 200) {
+        _recentLogs = jsonDecode(logsRes.body)['data'];
+      }
+
+      setState(() {
+        _isLoading = false;
+      });
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -44,6 +53,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final logsToShow = _recentLogs;
     return Scaffold(
       backgroundColor: const Color(0xFFF6FAFE),
       body: IndexedStack(
@@ -68,6 +78,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: Color(0xFF1A1A2E),
                   ),
                 ),
+                actions: [
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.notifications_none, color: Color(0xFF1A1A2E)),
+                        onPressed: () {},
+                      ),
+                      Positioned(
+                        right: 11,
+                        top: 11,
+                        child: Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
+                          child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
 
               SliverPadding(
@@ -93,7 +126,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     const SizedBox(height: 12),
                     _StatCard(
                       label: 'Staff Ratio',
-                      value: '1:4',
+                      value: '${_summaryData['staffRatio'] ?? '1:1'}',
                       trailing: const Icon(Icons.diversity_3,
                           color: Color(0xFF004AC6), size: 36),
                     ),
@@ -141,7 +174,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const ReportsScreen(),
+                          builder: (context) => const AnalyticsScreen(),
                         ),
                       );
                     },
@@ -182,8 +215,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         ),
                         TextButton(
                           onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Opening Care Logs...'))
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (context) => const ReportsScreen()),
                             );
                           },
                           child: const Text(
@@ -205,32 +239,46 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       padding: const EdgeInsets.all(16),
                       child: Column(
                         children: [
-                          _CareLogItem(
-                            icon: Icons.medication,
-                            iconBg: const Color(0xFF6DF5E1),
-                            iconColor: const Color(0xFF006B5F),
-                            title: 'Medication administered to Mr. Sharma',
-                            subtitle: 'Caregiver: Anjali M. • 10 mins ago',
-                            time: '10:45 AM',
-                          ),
-                          const SizedBox(height: 10),
-                          _CareLogItem(
-                            icon: Icons.check_circle,
-                            iconBg: const Color(0xFFDBE1FF),
-                            iconColor: const Color(0xFF004AC6),
-                            title: 'Vital signs update for Mrs. Gupta',
-                            subtitle: 'Caregiver: Rohan K. • 45 mins ago',
-                            time: '10:10 AM',
-                          ),
-                          const SizedBox(height: 10),
-                          _CareLogItem(
-                            icon: Icons.restaurant,
-                            iconBg: const Color(0xFFD8E3FB),
-                            iconColor: const Color(0xFF111C2D),
-                            title: 'Breakfast menu confirmed for Wing B',
-                            subtitle: 'Dietician: Priya S. • 2 hrs ago',
-                            time: '08:30 AM',
-                          ),
+                          ...logsToShow.map((log) {
+                            IconData icon = Icons.info;
+                            Color bg = const Color(0xFFDBE1FF);
+                            Color color = const Color(0xFF004AC6);
+
+                            if (log['type'] == 'medication') {
+                              icon = Icons.medication;
+                              bg = const Color(0xFF6DF5E1);
+                              color = const Color(0xFF006B5F);
+                            } else if (log['type'] == 'vitals') {
+                              icon = Icons.favorite;
+                              bg = const Color(0xFFFFD8E4);
+                              color = const Color(0xFFB3261E);
+                            } else if (log['type'] == 'activity') {
+                              icon = Icons.restaurant;
+                              bg = const Color(0xFFD8E3FB);
+                              color = const Color(0xFF111C2D);
+                            }
+
+                            final caretakerName = log['caretaker'] != null 
+                                ? log['caretaker']['name'] 
+                                : 'Staff';
+                            final timeStr = log['createdAt'] != null 
+                                ? log['createdAt'].toString().substring(11, 16) 
+                                : '--:--';
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: _CareLogItem(
+                                icon: icon,
+                                iconBg: bg,
+                                iconColor: color,
+                                title: log['content'] ?? 'Action performed',
+                                subtitle: 'Caregiver: $caretakerName',
+                                time: timeStr,
+                              ),
+                            );
+                          }).toList(),
+                          if (logsToShow.isEmpty)
+                            const Center(child: Text("No recent activity logs.")),
                         ],
                       ),
                     ),

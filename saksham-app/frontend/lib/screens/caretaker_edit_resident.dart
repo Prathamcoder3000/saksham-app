@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
+import 'dart:convert';
 
 class CaretakerEditResidentScreen extends StatefulWidget {
   final Map<String, String> data;
@@ -20,28 +22,65 @@ class _CaretakerEditResidentScreenState
   late TextEditingController contactController;
   late TextEditingController phoneController;
 
+  bool _isSaving = false;
+
   @override
   void initState() {
     super.initState();
 
     nameController = TextEditingController(text: widget.data["name"]);
-    ageController = TextEditingController(text: "82");
-    conditionController =
-        TextEditingController(text: "Type 2 Diabetes, Hypertension");
-    allergyController =
-        TextEditingController(text: "Penicillin (High Risk)");
-    contactController =
-        TextEditingController(text: "Priya Sharma");
-    phoneController =
-        TextEditingController(text: "+91 98765 43210");
+    ageController = TextEditingController(text: widget.data["age"] ?? "");
+    conditionController = TextEditingController(text: widget.data["conditions"] ?? "");
+    allergyController = TextEditingController(text: widget.data["allergies"] ?? "");
+    contactController = TextEditingController(text: widget.data["emergencyContactName"] ?? "");
+    phoneController = TextEditingController(text: widget.data["emergencyContactPhone"] ?? "");
   }
 
-  void save() {
-    Navigator.pop(context, {
-      "name": nameController.text,
-      "room": widget.data["room"],
-      "status": widget.data["status"],
-    });
+  Future<void> save() async {
+    final residentId = widget.data["id"];
+    if (residentId == null || residentId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot update: Missing resident ID")),
+      );
+      return;
+    }
+
+    setState(() => _isSaving = true);
+    try {
+      final response = await ApiService.put('/residents/caretaker/$residentId', {
+        'name': nameController.text,
+        'age': int.tryParse(ageController.text) ?? 0,
+        'conditions': conditionController.text.split(',').map((s) => s.trim()).toList(),
+        'allergies': allergyController.text.split(',').map((s) => s.trim()).toList(),
+        'emergencyContactName': contactController.text,
+        'emergencyContactPhone': phoneController.text,
+      });
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Resident updated successfully!"),
+              backgroundColor: Colors.green,
+            ),
+          );
+          Navigator.pop(context, true);
+        }
+      } else {
+        final msg = jsonDecode(response.body)['message'] ?? 'Update failed';
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Network error. Please try again.")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   @override
@@ -208,23 +247,27 @@ class _CaretakerEditResidentScreenState
 
               // 💾 SAVE
               GestureDetector(
-                onTap: save,
+                onTap: _isSaving ? null : save,
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [Colors.blue, Colors.teal],
+                    gradient: LinearGradient(
+                      colors: _isSaving 
+                        ? [Colors.grey, Colors.grey]
+                        : [Colors.blue, Colors.teal],
                     ),
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: const Center(
-                    child: Text(
-                      "Update",
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
-                    ),
+                  child: Center(
+                    child: _isSaving
+                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      : const Text(
+                          "Update",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold),
+                        ),
                   ),
                 ),
               ),

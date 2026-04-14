@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:ui';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import '../services/api_service.dart';
@@ -17,11 +18,58 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
 
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
+  final _roomController = TextEditingController();
+  final _dobController = TextEditingController();
   final _medicalController = TextEditingController();
   final _contactNameController = TextEditingController();
   final _phoneController = TextEditingController();
+  
+  String _selectedGender = 'Male';
   File? _selectedImage;
   bool _isSaving = false;
+  bool _isLoading = true;
+
+  List<dynamic> _caretakers = [];
+  List<dynamic> _families = [];
+  String? _selectedCaretakerId;
+  String? _selectedFamilyId;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchUserData();
+  }
+
+  Future<void> _fetchUserData() async {
+    try {
+      final caretakerResponse = await ApiService.get('/users?role=Caretaker');
+      final familyResponse = await ApiService.get('/users?role=Family');
+
+      if (caretakerResponse.statusCode == 200 && familyResponse.statusCode == 200) {
+        setState(() {
+          _caretakers = jsonDecode(caretakerResponse.body)['data'];
+          _families = jsonDecode(familyResponse.body)['data'];
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _selectDate() async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now().subtract(const Duration(days: 365 * 70)),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _dobController.text = picked.toIso8601String().split('T')[0];
+      });
+    }
+  }
 
   Future<void> _pickImage() async {
     final image = await UploadService.pickImage(ImageSource.gallery);
@@ -38,9 +86,14 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
         final response = await ApiService.post('/residents', {
           'name': _nameController.text,
           'age': int.tryParse(_ageController.text) ?? 0,
+          'dob': _dobController.text,
+          'gender': _selectedGender,
+          'room': _roomController.text,
           'conditions': _medicalController.text.split(','),
           'emergencyContactName': _contactNameController.text,
           'emergencyContactPhone': _phoneController.text,
+          'assignedCaretaker': _selectedCaretakerId,
+          'family': _selectedFamilyId,
         });
 
         if (response.statusCode == 201) {
@@ -195,9 +248,86 @@ class _AddResidentScreenState extends State<AddResidentScreen> {
                         children: [
                           _field("Full Name", "e.g. Samuel Johnson", _nameController),
                           const SizedBox(height: 15),
-                          _field("Age", "Resident's age", _ageController, isNumber: true),
+                          Row(
+                            children: [
+                              Expanded(child: _field("Age", "90", _ageController, isNumber: true)),
+                              const SizedBox(width: 15),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text("Gender"),
+                                    const SizedBox(height: 6),
+                                    DropdownButtonFormField<String>(
+                                      value: _selectedGender,
+                                      items: ['Male', 'Female', 'Other'].map((g) => DropdownMenuItem(value: g, child: Text(g))).toList(),
+                                      onChanged: (val) => setState(() => _selectedGender = val!),
+                                      decoration: InputDecoration(
+                                        filled: true,
+                                        fillColor: const Color(0xFFEAEFF3),
+                                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 15),
+                          _field("Room Number", "e.g. Room 302", _roomController),
+                          const SizedBox(height: 15),
+                          GestureDetector(
+                            onTap: _selectDate,
+                            child: AbsorbPointer(
+                              child: _field("Date of Birth", "YYYY-MM-DD", _dobController, icon: Icons.calendar_today),
+                            ),
+                          ),
                         ],
                       ),
+                    ),
+                    const SizedBox(height: 20),
+
+                    // 🤝 ASSIGNMENTS
+                    _card(
+                      icon: Icons.assignment_ind,
+                      title: "Assignments",
+                      child: _isLoading 
+                        ? const Center(child: CircularProgressIndicator())
+                        : Column(
+                          children: [
+                            const Text("Assigned Caretaker", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            DropdownButtonFormField<String>(
+                              value: _selectedCaretakerId,
+                              hint: const Text("Select Caretaker"),
+                              items: _caretakers.map<DropdownMenuItem<String>>((c) => DropdownMenuItem(
+                                value: c['_id'],
+                                child: Text(c['name']),
+                              )).toList(),
+                              onChanged: (val) => setState(() => _selectedCaretakerId = val),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFEAEFF3),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+                              ),
+                            ),
+                            const SizedBox(height: 15),
+                            const Text("Linked Family Member", style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            DropdownButtonFormField<String>(
+                              value: _selectedFamilyId,
+                              hint: const Text("Select Family Member"),
+                              items: _families.map<DropdownMenuItem<String>>((f) => DropdownMenuItem(
+                                value: f['_id'],
+                                child: Text(f['name']),
+                              )).toList(),
+                              onChanged: (val) => setState(() => _selectedFamilyId = val),
+                              decoration: InputDecoration(
+                                filled: true,
+                                fillColor: const Color(0xFFEAEFF3),
+                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
+                              ),
+                            ),
+                          ],
+                        ),
                     ),
                     const SizedBox(height: 20),
 

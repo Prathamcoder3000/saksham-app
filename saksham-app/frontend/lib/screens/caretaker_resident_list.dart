@@ -16,34 +16,67 @@ class _CaretakerResidentListScreenState
     extends State<CaretakerResidentListScreen> {
 
   String selectedFilter = "all";
+  List<dynamic> residents = [];
+  List<dynamic> filteredResidents = [];
+  bool _isLoading = true;
+  final _searchController = TextEditingController();
 
-  final residents = [
-    {
-      "name": "Ramesh Sharma",
-      "room": "Room 302 • North Wing",
-      "status": "stable"
-    },
-    {
-      "name": "Sunita Patel",
-      "room": "Room 105 • East Wing",
-      "status": "monitoring"
-    },
-    {
-      "name": "Anil Desai",
-      "room": "Room 412 • South Wing",
-      "status": "stable"
-    },
-    {
-      "name": "Lata Mangeshkar",
-      "room": "Room 209 • West Wing",
-      "status": "stable"
-    },
-    {
-      "name": "Rajesh Khanna",
-      "room": "Room 101 • East Wing",
-      "status": "critical"
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _fetchResidents();
+  }
+
+  Future<void> _fetchResidents() async {
+    try {
+      final response = await ApiService.get('/residents');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'];
+        setState(() {
+          residents = data;
+          filteredResidents = residents;
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _runFilter(String enteredKeyword) {
+    List<dynamic> results = [];
+    if (enteredKeyword.isEmpty) {
+      results = residents;
+    } else {
+      results = residents
+          .where((user) =>
+              user["name"].toLowerCase().contains(enteredKeyword.toLowerCase()))
+          .toList();
+    }
+
+    setState(() {
+      filteredResidents = results;
+    });
+  }
+
+  void _applyStatusFilter(String status) {
+    setState(() {
+      selectedFilter = status;
+      if (status == 'all') {
+        filteredResidents = residents;
+      } else {
+        filteredResidents = residents.where((r) => r['status'].toString().toLowerCase() == status.toLowerCase()).toList();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +115,10 @@ class _CaretakerResidentListScreenState
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(30),
                 ),
-                child: const TextField(
-                  decoration: InputDecoration(
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) => _runFilter(value),
+                  decoration: const InputDecoration(
                     icon: Icon(Icons.search),
                     hintText: "Search residents...",
                     border: InputBorder.none,
@@ -101,31 +136,38 @@ class _CaretakerResidentListScreenState
                 _chip("all", "All"),
                 _chip("stable", "Stable"),
                 _chip("critical", "Critical"),
+                _chip("monitoring", "Monitoring"),
               ],
             ),
 
             const SizedBox(height: 15),
 
-            // 📋 LIST
             Expanded(
-              child: ListView.builder(
+              child: _isLoading 
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
                 padding: const EdgeInsets.all(16),
-                itemCount: residents.length,
+                itemCount: filteredResidents.length,
                 itemBuilder: (context, index) {
 
-                  final r = residents[index];
-
-                  if (selectedFilter != "all" &&
-                      r["status"] != selectedFilter) {
-                    return const SizedBox();
-                  }
+                  final r = filteredResidents[index];
 
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => CaretakerResidentProfileScreen(data: r),
+                          builder: (_) => CaretakerResidentProfileScreen(data: {
+                            "id": r["_id"] ?? "",
+                            "name": r["name"] ?? "Unknown",
+                            "room": r["room"] ?? "N/A",
+                            "status": r["status"] ?? "stable",
+                            "age": (r["age"] ?? "").toString(),
+                            "conditions": (r["conditions"] as List?)?.join(", ") ?? "",
+                            "allergies": (r["allergies"] as List?)?.join(", ") ?? "",
+                            "emergencyContactName": r["emergencyContactName"] ?? "",
+                            "emergencyContactPhone": r["emergencyContactPhone"] ?? "",
+                          }),
                         ),
                       );
                     },
@@ -133,13 +175,11 @@ class _CaretakerResidentListScreenState
                       margin: const EdgeInsets.only(bottom: 14),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.white,
-                            Colors.blue.withOpacity(0.02)
-                          ],
-                        ),
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)
+                        ]
                       ),
                       child: Row(
                         children: [
@@ -160,7 +200,7 @@ class _CaretakerResidentListScreenState
                               children: [
 
                                 Text(
-                                  r["name"]!,
+                                  r["name"] ?? "Unknown",
                                   style: const TextStyle(
                                       fontWeight: FontWeight.bold),
                                   overflow: TextOverflow.ellipsis,
@@ -172,11 +212,11 @@ class _CaretakerResidentListScreenState
                                   children: [
                                     Icon(Icons.circle,
                                         size: 10,
-                                        color: _statusColor(r["status"]!)),
+                                        color: _statusColor(r["status"].toString().toLowerCase())),
                                     const SizedBox(width: 6),
                                     Flexible(
                                       child: Text(
-                                        r["room"]!,
+                                        r["room"] ?? "No Room",
                                         style: const TextStyle(color: Colors.grey),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -192,15 +232,15 @@ class _CaretakerResidentListScreenState
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 4),
                             decoration: BoxDecoration(
-                              color: _statusColor(r["status"]!)
+                              color: _statusColor(r["status"].toString().toLowerCase())
                                   .withOpacity(0.15),
                               borderRadius: BorderRadius.circular(20),
                             ),
                             child: Text(
-                              r["status"]!.toUpperCase(),
+                              (r["status"] ?? "stable").toString().toUpperCase(),
                               style: TextStyle(
                                 fontSize: 9,
-                                color: _statusColor(r["status"]!),
+                                color: _statusColor(r["status"].toString().toLowerCase()),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -309,11 +349,7 @@ class _CaretakerResidentListScreenState
     bool selected = selectedFilter == value;
 
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedFilter = value;
-        });
-      },
+      onTap: () => _applyStatusFilter(value),
       child: Container(
         padding:
             const EdgeInsets.symmetric(horizontal: 16, vertical: 8),

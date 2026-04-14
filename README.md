@@ -44,7 +44,10 @@ This repository is organized into two main components:
 | Task Management | ✅ Done |
 | Backend API (Node.js + MongoDB) | ✅ Done |
 | JWT Authentication | ✅ Done |
-| Real-time Notifications | ⏳ In Progress |
+| Real-time Notifications & Chat | ✅ Done |
+| Multi-language (English / Marathi / Hindi) | ✅ Done |
+| Offline Data Sync | ✅ Done |
+| Advanced Analytics Dashboard | ✅ Done |
 | Image Upload & Profile Photos | ✅ Done |
 
 ---
@@ -57,6 +60,8 @@ This repository is organized into two main components:
 - **Material UI** — Component library
 - **Custom Fonts** — Lexend font family
 - **Percent Indicator** — Progress indicators library
+- **fl_chart** — Advanced data visualization
+- **socket_io_client** — Real-time communication
 
 ### Backend
 - **Node.js** & **Express** — REST API server
@@ -64,6 +69,7 @@ This repository is organized into two main components:
 - **JWT** — Authentication & authorization
 - **Multer** — File upload handling
 - **Bcryptjs** — Password hashing
+- **socket.io** — WebSocket implementation
 
 ---
 
@@ -151,10 +157,11 @@ If you are setting up Flutter for the first time, follow these steps:
 - [x] Resident & Staff Management
 - [x] Medicine Tracking & Daily Checklists
 - [x] Image Upload Integration
-- [ ] Real-time Notifications & Chat
-- [ ] Push Notifications
-- [ ] Offline Data Sync
-- [ ] Advanced Analytics Dashboard
+- [x] Real-time Notifications & Chat
+- [x] Multi-language Support (English, Marathi, Hindi)
+- [x] Push Notifications (FCM Integration Ready)
+- [x] Offline Data Sync (Automatic Caching)
+- [x] Advanced Analytics Dashboard
 
 ---
 

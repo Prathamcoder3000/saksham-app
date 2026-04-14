@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:saksham/providers/auth_provider.dart';
 import 'package:saksham/services/api_service.dart';
 import 'package:provider/provider.dart';
@@ -22,27 +23,46 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
   int _currentIndex = 0;
   bool _isLoading = true;
   int _pendingTasks = 0;
+  List<dynamic> _careLogs = [];
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _fetchSummary();
+    _fetchCareLogs();
   }
 
   Future<void> _fetchSummary() async {
     try {
-        // Fetch tasks to count pending
         final taskRes = await ApiService.get('/tasks');
         if (taskRes.statusCode == 200) {
             final List<dynamic> tasks = jsonDecode(taskRes.body)['data'];
-            setState(() {
-                _pendingTasks = tasks.where((t) => t['status'] == 'pending').length;
-                _isLoading = false;
-            });
+            if (mounted) {
+              setState(() {
+                  _pendingTasks = tasks.where((t) => t['status'] == 'pending').length;
+              });
+            }
         }
     } catch (e) {
-        setState(() => _isLoading = false);
+      // Quiet fail
+    }
+  }
+
+  Future<void> _fetchCareLogs() async {
+    try {
+      final response = await ApiService.get('/care-logs');
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'];
+        if (mounted) {
+          setState(() {
+            _careLogs = data;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
   static const bg = Color(0xFFF6FAFE);
@@ -69,10 +89,10 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
             ),
           ),
           child: Row(
-            children: const [
+            children: [
               Text(
-                "Caretaker Dashboard",
-                style: TextStyle(
+                context.l10n.caretaker_dashboard,
+                style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
                   color: primary,
@@ -164,7 +184,7 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
                       ),
                     ),
                   Text(
-                    "Namaste, $firstName 🙏",
+                    "${context.l10n.namaste}, $firstName 🙏",
                     style: const TextStyle(
                       fontSize: 44,
                       fontWeight: FontWeight.w600,
@@ -317,21 +337,36 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: const [
+                    children: [
                       Text(
-                        "Shift Notes",
-                        style: TextStyle(
+                        context.l10n.recent_activity,
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w600),
                       ),
-                      Icon(Icons.edit_note, color: primary),
+                      const Icon(Icons.history, color: primary),
                     ],
                   ),
                   const SizedBox(height: 18),
-                  _dotNote("Room 302 vitals updated — Ramesh Sharma stable", secondary),
-                  _dotNote("Morning medicine round done — North Wing", primary),
+                  if (_careLogs.isEmpty)
+                    Center(child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Text(context.l10n.no_items_found, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                    ))
+                  else
+                    ..._careLogs.take(5).map((log) {
+                      Color logColor = primary;
+                      if (log['type'] == 'medication') logColor = secondary;
+                      if (log['type'] == 'vitals') logColor = Colors.orange;
+                      
+                      return _dotNote(
+                        "${log['title'] ?? log['description'] ?? 'Activity recorded'}",
+                        logColor,
+                      );
+                    }).toList(),
                 ],
               ),
             ),

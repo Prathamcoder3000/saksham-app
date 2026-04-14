@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'login_screen.dart';
+import '../l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
+import '../providers/language_provider.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -13,13 +16,46 @@ class RoleSelectionScreen extends StatelessWidget {
         backgroundColor: Colors.white,
         elevation: 1,
         leading: const Icon(Icons.arrow_back, color: Colors.blue),
-        title: const Text(
-          "Saksham",
-          style: TextStyle(
+        title: Text(
+          AppLocalizations.of(context)!.appTitle,
+          style: const TextStyle(
             fontWeight: FontWeight.bold,
             color: Colors.blue,
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Consumer<LanguageProvider>(
+              builder: (context, languageProvider, child) {
+                return DropdownButton<String>(
+                  value: languageProvider.currentLocale.languageCode,
+                  underline: const SizedBox(),
+                  icon: const Icon(Icons.language, color: Colors.blue),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      languageProvider.setLocale(Locale(newValue));
+                    }
+                  },
+                  items: [
+                    const DropdownMenuItem(
+                      value: 'en',
+                      child: Text("English"),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'mr',
+                      child: Text("मराठी"),
+                    ),
+                    const DropdownMenuItem(
+                      value: 'hi',
+                      child: Text("हिन्दी"),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ],
       ),
 
       body: Column(
@@ -29,9 +65,9 @@ class RoleSelectionScreen extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  const Text(
-                    "Select Your Role",
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.selectRole,
+                    style: const TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
@@ -39,10 +75,10 @@ class RoleSelectionScreen extends StatelessWidget {
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                    "Choose how you'll interact with the Saksham ecosystem today.",
+                  Text(
+                    AppLocalizations.of(context)!.chooseRoleSubtitle,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: Colors.grey),
                   ),
 
                   const SizedBox(height: 30),
@@ -56,9 +92,8 @@ class RoleSelectionScreen extends StatelessWidget {
                           context: context,
                           role: "admin",
                           icon: Icons.admin_panel_settings,
-                          title: "Admin",
-                          subtitle:
-                              "Manage organization, staff, and overall operations.",
+                          title: AppLocalizations.of(context)!.admin,
+                          subtitle: AppLocalizations.of(context)!.adminSubtitle,
                         ),
 
                         // 🔵 CARETAKER
@@ -66,9 +101,8 @@ class RoleSelectionScreen extends StatelessWidget {
                           context: context,
                           role: "caretaker",
                           icon: Icons.medical_services,
-                          title: "Caretaker",
-                          subtitle:
-                              "Monitor patients, update vitals, and log care activities.",
+                          title: AppLocalizations.of(context)!.caretaker,
+                          subtitle: AppLocalizations.of(context)!.caretakerSubtitle,
                         ),
 
                         // 🟣 FAMILY
@@ -76,9 +110,8 @@ class RoleSelectionScreen extends StatelessWidget {
                           context: context,
                           role: "family",
                           icon: Icons.family_restroom,
-                          title: "Family Member",
-                          subtitle:
-                              "Track your loved one's health and stay updated.",
+                          title: AppLocalizations.of(context)!.family,
+                          subtitle: AppLocalizations.of(context)!.familySubtitle,
                         ),
                       ],
                     ),
@@ -88,20 +121,20 @@ class RoleSelectionScreen extends StatelessWidget {
             ),
           ),
 
-          const Padding(
-            padding: EdgeInsets.only(bottom: 20),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Terms of Service"),
-                SizedBox(width: 10),
-                Text("•"),
-                SizedBox(width: 10),
-                Text("Privacy Policy"),
-                SizedBox(width: 10),
-                Text("•"),
-                SizedBox(width: 10),
-                Text("Need Help?"),
+                Text(AppLocalizations.of(context)!.termsOfService),
+                const SizedBox(width: 10),
+                const Text("•"),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context)!.privacyPolicy),
+                const SizedBox(width: 10),
+                const Text("•"),
+                const SizedBox(width: 10),
+                Text(AppLocalizations.of(context)!.needHelp),
               ],
             ),
           ),

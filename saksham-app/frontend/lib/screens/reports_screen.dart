@@ -1,8 +1,13 @@
+import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'dart:math';
 import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
+import '../l10n/app_localizations.dart';
 import 'detailed_report.dart';
 import 'manage_staff.dart';
 import 'resident_list.dart';
+import 'admin_profile_screen.dart';
 
 class ReportsScreen extends StatefulWidget {
   const ReportsScreen({super.key});
@@ -72,9 +77,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                             child: const Icon(Icons.arrow_back, color: Color(0xFF2563EB)),
                           ),
                           const SizedBox(width: 10),
-                          const Text(
-                            "Reports",
-                            style: TextStyle(
+                          Text(
+                            AppLocalizations.of(context)!.performanceSummary,
+                            style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF2563EB),
@@ -98,9 +103,9 @@ class _ReportsScreenState extends State<ReportsScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  const Text(
-                    "Performance\nSummary",
-                    style: TextStyle(
+                  Text(
+                    AppLocalizations.of(context)!.performanceSummary.replaceFirst(' ', '\n'),
+                    style: const TextStyle(
                       fontSize: 34,
                       fontWeight: FontWeight.w700,
                       height: 1.1,
@@ -116,17 +121,17 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
                   const SizedBox(height: 25),
 
-                  _statCard(Icons.verified, "Overall Adherence", "${_summary['adherenceRate'] ?? 0}%", "+2.4%", Colors.blue),
-                  _statCard(Icons.notifications, "Active Alerts", "${_summary['activeAlerts'] ?? 0}".padLeft(2, '0'), "Pending action", Colors.red),
-                  _statCard(Icons.calendar_today, "Daily Check-ins", "${_summary['dailyCheckins'] ?? 0}", "Completed today", Colors.teal),
+                  _statCard(Icons.verified, AppLocalizations.of(context)!.adherenceTrends.split(' ')[0] + " Adherence", "${_summary['adherenceRate'] ?? 0}%", "+2.4%", Colors.blue),
+                  _statCard(Icons.notifications, AppLocalizations.of(context)!.activeAlerts, "${_summary['activeAlerts'] ?? 0}".padLeft(2, '0'), "Pending action", Colors.red),
+                  _statCard(Icons.calendar_today, AppLocalizations.of(context)!.dailyCheckins, "${_summary['dailyCheckins'] ?? 0}", "Completed today", Colors.teal),
 
                   const SizedBox(height: 25),
 
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text("Adherence Trends",
-                          style: TextStyle(fontWeight: FontWeight.w600)),
+                      Text(AppLocalizations.of(context)!.adherenceTrends,
+                          style: const TextStyle(fontWeight: FontWeight.w600)),
                       Row(
                         children: [
                           _chip("7 Days", true),
@@ -206,8 +211,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
 
                         const SizedBox(height: 10),
 
-                        const Text("Facility Health Score",
-                            style: TextStyle(fontWeight: FontWeight.bold)),
+                        Text(AppLocalizations.of(context)!.facilityHealthScore,
+                            style: const TextStyle(fontWeight: FontWeight.bold)),
 
                         const SizedBox(height: 6),
 
@@ -234,8 +239,8 @@ class _ReportsScreenState extends State<ReportsScreen> {
                               )
                             ],
                           ),
-                          child: const Text("Download Full PDF",
-                              style: TextStyle(color: Colors.white)),
+                          child: Text(AppLocalizations.of(context)!.downloadPDF,
+                              style: const TextStyle(color: Colors.white)),
                         ),
                       ],
                     ),
@@ -266,11 +271,11 @@ class _ReportsScreenState extends State<ReportsScreen> {
           builder: (ctx) => Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _navBtnRp(ctx, Icons.dashboard, "Dashboard", false),
+              _navBtnRp(ctx, Icons.dashboard, AppLocalizations.of(context)!.analytics, false), // Using analytics key for dashboard/reports context
               _navBtnRp(ctx, Icons.group, "Staff", false),
               _navBtnRp(ctx, Icons.people, "Residents", false),
-              _navBtnRp(ctx, Icons.analytics, "Reports", true),
-              _navBtnRp(ctx, Icons.settings, "Settings", false),
+              _navBtnRp(ctx, Icons.analytics, AppLocalizations.of(context)!.performanceSummary.split(' ')[0], true),
+              _navBtnRp(ctx, Icons.settings, AppLocalizations.of(context)!.settings, false),
             ],
           ),
         ),
@@ -471,8 +476,7 @@ Widget _navBtnRp(BuildContext context, IconData icon, String label, bool active)
       } else if (label == "Residents") {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ResidentListScreen()));
       } else if (label == "Settings") {
-        // Not implemented Settings screen for admin yet, pop to dashboard
-        Navigator.popUntil(context, (route) => route.isFirst);
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminProfileScreen()));
       }
     },
     child: Container(

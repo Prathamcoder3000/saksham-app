@@ -2,6 +2,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const http = require('http');
+const socketio = require('socket.io');
 
 // Connect to database
 connectDB();
@@ -62,6 +64,31 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const server = http.createServer(app);
+const io = socketio(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"]
+  }
+});
+
+// Socket.io connection logic
+io.on('connection', (socket) => {
+  console.log('New WebSocket connection');
+
+  socket.on('join', ({ userId }) => {
+    socket.join(userId);
+    console.log(`User ${userId} joined their private room`);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected');
+  });
+});
+
+// Pass io to request object for use in controllers
+app.set('io', io);
+
+server.listen(PORT, () => {
   console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
 });

@@ -1,5 +1,12 @@
+import 'package:flutter/material.dart';
+import 'dart:ui';
+import 'package:provider/provider.dart';
 import '../services/api_service.dart';
 import 'dart:convert';
+import '../providers/auth_provider.dart';
+import 'add_staff_screen.dart';
+import 'resident_list.dart';
+import 'reports_screen.dart';
 
 class ManageStaffScreen extends StatefulWidget {
   const ManageStaffScreen({super.key});
@@ -24,24 +31,28 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
     _fetchData();
   }
 
-  Future<void> _fetchData() async {
-    final demoStaff = [
-      {
-        '_id': 'demo_s1',
-        'user': {'name': 'Rahul Sharma (Demo)', 'email': 'rahul@saksham.care'},
-        'designation': 'Senior Caretaker',
-        'shift': 'Morning',
-        'status': 'Active'
-      },
-      {
-        '_id': 'demo_s2',
-        'user': {'name': 'Priya Patel (Demo)', 'email': 'priya@saksham.care'},
-        'designation': 'Nurse',
-        'shift': 'Night',
-        'status': 'On Leave'
-      }
-    ];
+  Future<void> _confirmDelete(BuildContext context, String id, String name) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Confirm Delete'),
+        content: Text('Are you sure you want to permanently remove $name from the staff directory?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Delete', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
 
+    if (confirmed == true) {
+      _deleteStaff(id);
+    }
+  }
+
+  Future<void> _fetchData() async {
     try {
       final staffRes = await ApiService.get('/staff');
       final statsRes = await ApiService.get('/staff/stats');
@@ -49,7 +60,7 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
       if (staffRes.statusCode == 200) {
         final List<dynamic> data = jsonDecode(staffRes.body)['data'];
         setState(() {
-          _staffList = data.isEmpty ? demoStaff : data;
+          _staffList = data;
           if (statsRes.statusCode == 200) {
             _stats = jsonDecode(statsRes.body)['data'];
           }
@@ -57,15 +68,15 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
         });
       } else {
         setState(() {
-            _staffList = demoStaff;
-            _isLoading = false;
+          _isLoading = false;
         });
       }
     } catch (e) {
-      setState(() { 
-        _staffList = demoStaff;
-        _isLoading = false; 
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -149,7 +160,7 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
                     children: [
                       Expanded(child: _stat("Active Staff", "${_stats['active']}", false, Icons.group)),
                       const SizedBox(width: 10),
-                      Expanded(child: _stat("On Shift", "${_stats['active']}", false, Icons.medical_services)),
+                      Expanded(child: _stat("On Leave", "${_stats['onLeave']}", false, Icons.event_busy)),
                     ],
                   ),
 
@@ -405,17 +416,23 @@ Widget _staff(String id, String name, String role, String shift, Color color) {
           children: [
             const Icon(Icons.edit, size: 18, color: Colors.blue),
             const SizedBox(height: 8),
-            GestureDetector(
-                onTap: () {
-                    final state = context.findAncestorStateOfType<_ManageStaffScreenState>();
-                    state?._deleteStaff(id);
-                },
-                child: const Icon(Icons.delete, size: 18, color: Colors.red)
+            Consumer<AuthProvider>(
+              builder: (context, auth, child) {
+                if (auth.user?.role != 'Admin') return const SizedBox.shrink();
+                return GestureDetector(
+                    onTap: () {
+                        final state = context.findAncestorStateOfType<_ManageStaffScreenState>();
+                        state?._confirmDelete(context, id, name);
+                    },
+                    child: const Icon(Icons.delete, size: 18, color: Colors.red)
+                );
+              },
             ),
           ],
-        )
+        ),
       ],
     ),
+  ),
   );
 }
 

@@ -18,7 +18,10 @@ exports.getMedicines = async (req, res, next) => {
 exports.getTodayMedicines = async (req, res, next) => {
   try {
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const medicines = await Medicine.find({ resident: req.params.residentId });
+    
+    // If residentId is in params (merged), filter by it, otherwise get all (for dashboard)
+    const filter = req.params.residentId ? { resident: req.params.residentId } : {};
+    const medicines = await Medicine.find(filter).populate('resident', 'name room');
     
     // Filter/Log logic: Find logs for today or return medicine with "pending" status for today
     const data = medicines.map(med => {

@@ -46,6 +46,14 @@ exports.login = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
+    // Role Validation
+    if (req.body.role && user.role !== req.body.role) {
+      return res.status(401).json({ 
+        success: false, 
+        message: `Unauthorized: User is registered as ${user.role}, not ${req.body.role}` 
+      });
+    }
+
     sendTokenResponse(user, 200, res);
   } catch (err) {
     next(err);

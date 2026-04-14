@@ -54,3 +54,20 @@ exports.updatePassword = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Get all users (with filtering)
+// @route   GET /api/v1/users
+// @access  Private (Admin)
+exports.getUsers = async (req, res, next) => {
+  try {
+    const query = {};
+    if (req.query.role) {
+      query.role = req.query.role;
+    }
+
+    const users = await User.find(query);
+    res.status(200).json({ success: true, count: users.length, data: users });
+  } catch (err) {
+    next(err);
+  }
+};

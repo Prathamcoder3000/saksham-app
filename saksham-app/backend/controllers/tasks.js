@@ -86,10 +86,25 @@ exports.updateTaskStatus = async (req, res, next) => {
     const task = await Task.findByIdAndUpdate(req.params.id, { status }, {
       new: true,
       runValidators: true
-    });
+    }).populate('resident', 'name');
+
     if (!task) {
       return res.status(404).json({ success: false, message: 'Task not found' });
     }
+
+    // TRIGGER: Auto-create CareLog if status is 'done' or 'completed'
+    if (status === 'done' || status === 'completed') {
+        const CareLog = require('../models/CareLog');
+        await CareLog.create({
+            resident: task.resident._id,
+            type: 'other',  // 'activity' is not in schema enum — using 'other'
+            title: `Task completed for ${task.resident.name}`,
+            description: `${task.title} - ${task.description || ''}`,
+            caretaker: req.user.id,
+            timestamp: new Date()
+        });
+    }
+
     res.status(200).json({ success: true, data: task });
   } catch (err) {
     next(err);

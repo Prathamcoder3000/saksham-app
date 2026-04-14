@@ -2,7 +2,8 @@ const express = require('express');
 const {
   getSummary,
   getAdherenceTrend,
-  getResidentReport
+  getResidentReport,
+  getStaffActivity
 } = require('../controllers/reports');
 
 const router = express.Router();
@@ -16,5 +17,6 @@ router.use(authorize('Admin'));
 router.get('/summary', getSummary);
 router.get('/adherence-trend', getAdherenceTrend);
 router.get('/resident/:id', getResidentReport);
+router.get('/staff-activity', getStaffActivity);
 
 module.exports = router;

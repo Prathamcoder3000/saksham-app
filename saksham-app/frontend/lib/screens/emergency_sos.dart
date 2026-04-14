@@ -1,8 +1,9 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
 import 'caretaker_dashboard.dart';
+import '../providers/auth_provider.dart';
 
 class EmergencySOSScreen extends StatefulWidget {
   const EmergencySOSScreen({super.key});
@@ -48,6 +49,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
   }
 
   Future<void> triggerSOS() async {
+    final auth = Provider.of<AuthProvider>(context, listen: false);
     setState(() {
       isHolding = false;
       _isSending = true;
@@ -55,8 +57,8 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
 
     try {
         final response = await ApiService.post('/alerts/sos', {
-            'location': 'Ward A, Room 302', // Mock location for now
-            'note': 'Urgent caretaker assistance requested'
+            'location': 'Facility Ward', 
+            'note': 'Emergency SOS triggered by Caretaker: ${auth.user?.name ?? 'Unknown'}'
         });
         
         if (response.statusCode == 201) {
@@ -65,9 +67,7 @@ class _EmergencySOSScreenState extends State<EmergencySOSScreen> {
     } catch (e) {
         // Handle error
     } finally {
-        setState(() {
-            _isSending = false;
-        });
+        if (mounted) setState(() => _isSending = false);
     }
   }
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'role_selection.dart';
+import '../l10n/app_localizations.dart';
 
 class AdminProfileScreen extends StatelessWidget {
   const AdminProfileScreen({super.key});
@@ -11,9 +12,9 @@ class AdminProfileScreen extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Administrator Profile",
-            style: TextStyle(
+          Text(
+            AppLocalizations.of(context)!.profile,
+            style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
               color: Color(0xFF1D4ED8),
@@ -46,9 +47,9 @@ class AdminProfileScreen extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      "System Admin",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    Text(
+                      AppLocalizations.of(context)!.admin,
+                      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -62,9 +63,9 @@ class AdminProfileScreen extends StatelessWidget {
           ),
           const SizedBox(height: 30),
 
-          const Text(
-            "Organization Settings",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          Text(
+            AppLocalizations.of(context)!.settings,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
           _settingsTile(context, Icons.store, "Facility Details", "Manage branches & locations"),
@@ -93,9 +94,9 @@ class AdminProfileScreen extends StatelessWidget {
                 );
               },
               icon: const Icon(Icons.logout, color: Colors.red),
-              label: const Text(
-                "Secure Log Out",
-                style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
+              label: Text(
+                AppLocalizations.of(context)!.logout,
+                style: const TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
