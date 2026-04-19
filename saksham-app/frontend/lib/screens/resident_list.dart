@@ -205,6 +205,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
                               room: r.room,
                               status: "Stable", // Default
                               statusColor: const Color(0xFF10B981),
+                              onDelete: () => _confirmDelete(context, r.id, r.name),
                             );
                           },
                         ),
@@ -311,6 +312,7 @@ class ResidentCard extends StatelessWidget {
   final String room;
   final String status;
   final Color statusColor;
+  final VoidCallback onDelete;
 
   const ResidentCard({
     super.key,
@@ -319,6 +321,7 @@ class ResidentCard extends StatelessWidget {
     required this.room,
     required this.status,
     required this.statusColor,
+    required this.onDelete,
   });
 
   @override
@@ -425,7 +428,7 @@ class ResidentCard extends StatelessWidget {
            builder: (context, auth, child) {
              if (auth.user?.role != 'Admin') return const SizedBox.shrink();
              return GestureDetector(
-               onTap: () => _confirmDelete(context, id, name),
+               onTap: onDelete,
                child: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
              );
            },

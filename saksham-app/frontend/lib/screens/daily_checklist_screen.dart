@@ -80,7 +80,7 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
                     child: const Icon(Icons.arrow_back, color: Colors.blue),
                   ),
                   const SizedBox(width: 10),
-                  Text(context.l10n.daily_checklist,
+                  Text("Daily Checklist",
                           style: const TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 18,

@@ -108,6 +108,21 @@ class ApiService {
     return response;
   }
 
+  // PATCH Request
+  static Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
+    final token = await getToken();
+    final response = await http.patch(
+      Uri.parse('$baseUrl$endpoint'),
+      headers: {
+        'Content-Type': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode(data),
+    );
+    _handleResponse(response);
+    return response;
+  }
+
   static void _handleResponse(http.Response response) {
     if (response.statusCode == 401) {
       if (onUnauthorized != null) {

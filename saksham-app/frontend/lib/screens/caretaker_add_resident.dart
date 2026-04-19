@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:saksham/services/api_service.dart';
+
 
 class CaretakerAddResidentScreen extends StatefulWidget {
   const CaretakerAddResidentScreen({super.key});
@@ -11,7 +14,12 @@ class CaretakerAddResidentScreen extends StatefulWidget {
 class _CaretakerAddResidentScreenState
     extends State<CaretakerAddResidentScreen> {
 
+  final nameController = TextEditingController();
+  final ageController = TextEditingController();
   final roomController = TextEditingController();
+  final conditionController = TextEditingController();
+  final contactController = TextEditingController();
+  final phoneController = TextEditingController();
   bool _isSaving = false;
 
   Future<void> save() async {

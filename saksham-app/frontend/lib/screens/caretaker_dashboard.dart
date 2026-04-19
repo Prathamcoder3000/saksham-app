@@ -91,7 +91,7 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
           child: Row(
             children: [
               Text(
-                context.l10n.caretaker_dashboard,
+                "Caretaker Dashboard",
                 style: const TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w600,
@@ -184,7 +184,7 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
                       ),
                     ),
                   Text(
-                    "${context.l10n.namaste}, $firstName 🙏",
+                    "Namaste, $firstName 🙏",
                     style: const TextStyle(
                       fontSize: 44,
                       fontWeight: FontWeight.w600,
@@ -343,7 +343,7 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        context.l10n.recent_activity,
+                        "Recent Activity",
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w600),
                       ),
@@ -354,7 +354,7 @@ class _CaretakerDashboardState extends State<CaretakerDashboard> {
                   if (_careLogs.isEmpty)
                     Center(child: Padding(
                       padding: const EdgeInsets.all(20),
-                      child: Text(context.l10n.no_items_found, style: const TextStyle(color: Colors.grey, fontSize: 13)),
+                      child: Text("No items found", style: const TextStyle(color: Colors.grey, fontSize: 13)),
                     ))
                   else
                     ..._careLogs.take(5).map((log) {

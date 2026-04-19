@@ -579,8 +579,8 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
 
   // 👩‍⚕️ CARETAKER
   Widget _caretakerCard() {
-    final ct = _resident?.assignedCaretaker;
-    final ctName = ct != null ? ct['name'] : "Facility Staff";
+    final ctId = _resident?.assignedCaretaker;
+    final ctName = "Facility Staff";
     
     return Container(
       padding: const EdgeInsets.all(18),
@@ -608,7 +608,7 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
             ),
             child: ClipOval(
               child: Image.network(
-                "https://i.pravatar.cc/150?u=${ct?['email'] ?? 'default'}",
+                "https://i.pravatar.cc/150?u=${ctId ?? 'default'}",
                 fit: BoxFit.cover,
               ),
             ),
@@ -650,12 +650,12 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
           const SizedBox(width: 10),
           GestureDetector(
             onTap: () {
-              if (ct == null) return;
+              if (ctId == null) return;
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => ChatScreen(
-                    recipientId: ct['id'] ?? ct['_id'],
+                    recipientId: ctId,
                     recipientName: ctName,
                     conversationId: "conv_${_resident!.id}_family", 
                   ),
