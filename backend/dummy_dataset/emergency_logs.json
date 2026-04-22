@@ -1,0 +1,162 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b00"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "location": "A-103",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:29:41.182Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b01"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "location": "B-203",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:24:04.074Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b02"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "location": "A-104",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:35:25.996Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b03"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a87"
+    },
+    "location": "B-204",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:34:55.423Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b04"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "location": "A-102",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:31:25.612Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b05"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "location": "A-101",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:33:14.231Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b06"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a87"
+    },
+    "location": "A-102",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:36:47.719Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45b07"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "location": "B-201",
+    "note": "SOS triggered by caretaker.",
+    "status": "resolved",
+    "resolvedBy": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "resolvedAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    },
+    "timestamp": {
+      "$date": "2026-04-22T15:35:37.978Z"
+    }
+  }
+]

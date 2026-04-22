@@ -1,0 +1,423 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a95"
+    },
+    "name": "Mohan Gadgil",
+    "age": 89,
+    "gender": "Male",
+    "room": "B-204",
+    "status": "Observing",
+    "conditions": [],
+    "allergies": [
+      "Dust",
+      "Peanuts"
+    ],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8f"
+    },
+    "emergencyContactName": "Ravi Verma",
+    "emergencyContactPhone": "+91 9983647744",
+    "admissionDate": {
+      "$date": "2026-03-30T00:21:31.903Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a96"
+    },
+    "name": "Lata Deshpande",
+    "age": 83,
+    "gender": "Female",
+    "room": "A-102",
+    "status": "Stable",
+    "conditions": [
+      "Asthma"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "emergencyContactName": "Neha Thakur",
+    "emergencyContactPhone": "+91 9997210249",
+    "admissionDate": {
+      "$date": "2026-03-06T14:32:16.919Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a97"
+    },
+    "name": "Harish Chandra",
+    "age": 81,
+    "gender": "Male",
+    "room": "B-201",
+    "status": "Stable",
+    "conditions": [
+      "Dementia"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a89"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "emergencyContactName": "Priya Menon",
+    "emergencyContactPhone": "+91 9996152136",
+    "admissionDate": {
+      "$date": "2026-01-26T20:02:21.368Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a98"
+    },
+    "name": "Vimala Bhagat",
+    "age": 76,
+    "gender": "Female",
+    "room": "B-201",
+    "status": "Stable",
+    "conditions": [],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a91"
+    },
+    "emergencyContactName": "Priya Menon",
+    "emergencyContactPhone": "+91 9986074997",
+    "admissionDate": {
+      "$date": "2026-03-26T10:55:34.372Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a99"
+    },
+    "name": "Ashok Kumar",
+    "age": 83,
+    "gender": "Male",
+    "room": "A-103",
+    "status": "Stable",
+    "conditions": [],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8b"
+    },
+    "emergencyContactName": "Suresh Iyer",
+    "emergencyContactPhone": "+91 9950036859",
+    "admissionDate": {
+      "$date": "2026-03-20T07:14:35.252Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9a"
+    },
+    "name": "Kamal Nath",
+    "age": 75,
+    "gender": "Female",
+    "room": "B-204",
+    "status": "Stable",
+    "conditions": [
+      "Asthma"
+    ],
+    "allergies": [
+      "Dust",
+      "Peanuts"
+    ],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8c"
+    },
+    "emergencyContactName": "Meenakshi Nair",
+    "emergencyContactPhone": "+91 9975496126",
+    "admissionDate": {
+      "$date": "2026-04-03T21:09:52.646Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9b"
+    },
+    "name": "Pushpa Devi",
+    "age": 83,
+    "gender": "Male",
+    "room": "C-302",
+    "status": "Stable",
+    "conditions": [
+      "Hypertension",
+      "Arthritis"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a94"
+    },
+    "emergencyContactName": "Anjali Rao",
+    "emergencyContactPhone": "+91 9959510556",
+    "admissionDate": {
+      "$date": "2026-03-27T08:38:19.956Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9c"
+    },
+    "name": "Govind Ranade",
+    "age": 79,
+    "gender": "Female",
+    "room": "A-101",
+    "status": "Observing",
+    "conditions": [],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8e"
+    },
+    "emergencyContactName": "Meenakshi Nair",
+    "emergencyContactPhone": "+91 9937859728",
+    "admissionDate": {
+      "$date": "2026-04-15T04:48:50.709Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9d"
+    },
+    "name": "Shalini Gokhale",
+    "age": 67,
+    "gender": "Male",
+    "room": "B-202",
+    "status": "Stable",
+    "conditions": [
+      "Osteoporosis",
+      "Cataracts"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "emergencyContactName": "Ritu Desai",
+    "emergencyContactPhone": "+91 9942694516",
+    "admissionDate": {
+      "$date": "2026-01-02T06:07:44.258Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9e"
+    },
+    "name": "Shyamrao Patil",
+    "age": 71,
+    "gender": "Female",
+    "room": "C-301",
+    "status": "Stable",
+    "conditions": [
+      "Heart Disease"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a91"
+    },
+    "emergencyContactName": "Meenakshi Nair",
+    "emergencyContactPhone": "+91 9933339526",
+    "admissionDate": {
+      "$date": "2026-01-12T08:47:42.680Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a9f"
+    },
+    "name": "Malti Kelkar",
+    "age": 70,
+    "gender": "Male",
+    "room": "C-301",
+    "status": "Stable",
+    "conditions": [],
+    "allergies": [
+      "Dust",
+      "Peanuts"
+    ],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8f"
+    },
+    "emergencyContactName": "Ravi Verma",
+    "emergencyContactPhone": "+91 9935536000",
+    "admissionDate": {
+      "$date": "2026-02-16T11:59:37.145Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa0"
+    },
+    "name": "Narayan Agrawal",
+    "age": 70,
+    "gender": "Female",
+    "room": "A-101",
+    "status": "Stable",
+    "conditions": [],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a89"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a8e"
+    },
+    "emergencyContactName": "Neha Thakur",
+    "emergencyContactPhone": "+91 9977370120",
+    "admissionDate": {
+      "$date": "2026-02-14T21:12:33.866Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Parvati Sharma",
+    "age": 66,
+    "gender": "Male",
+    "room": "B-203",
+    "status": "Stable",
+    "conditions": [
+      "Hypertension",
+      "Arthritis"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "emergencyContactName": "Neha Thakur",
+    "emergencyContactPhone": "+91 9987788256",
+    "admissionDate": {
+      "$date": "2026-01-24T03:01:46.797Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa2"
+    },
+    "name": "Anand Kulkarni",
+    "age": 75,
+    "gender": "Female",
+    "room": "C-301",
+    "status": "Stable",
+    "conditions": [
+      "Hypertension",
+      "Arthritis"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a94"
+    },
+    "emergencyContactName": "Ravi Verma",
+    "emergencyContactPhone": "+91 9910082981",
+    "admissionDate": {
+      "$date": "2026-02-01T12:24:12.379Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa3"
+    },
+    "name": "Saraswati Vaidya",
+    "age": 82,
+    "gender": "Male",
+    "room": "A-103",
+    "status": "Observing",
+    "conditions": [
+      "Heart Disease"
+    ],
+    "allergies": [],
+    "assignedCaretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "family": {
+      "$oid": "69e8eb1a9b12c0d85da45a91"
+    },
+    "emergencyContactName": "Ritu Desai",
+    "emergencyContactPhone": "+91 9991444220",
+    "admissionDate": {
+      "$date": "2026-02-16T08:20:33.260Z"
+    },
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  }
+]

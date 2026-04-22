@@ -1,0 +1,249 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb199b12c0d85da45a82"
+    },
+    "name": "Rajesh Deshmukh",
+    "email": "admin1@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Admin",
+    "phone": "+91 9884161809",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:57.994Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a83"
+    },
+    "name": "Sunita Kadam",
+    "email": "admin2@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Admin",
+    "phone": "+91 9854603247",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a84"
+    },
+    "name": "Vikram Joshi",
+    "email": "admin3@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Admin",
+    "phone": "+91 9892795192",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "name": "Pooja Patil",
+    "email": "caretaker1@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8888702345",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "name": "Ajay Chavan",
+    "email": "caretaker2@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8825534722",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a87"
+    },
+    "name": "Sneha Mhatre",
+    "email": "caretaker3@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8867461814",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a88"
+    },
+    "name": "Ramesh Yadav",
+    "email": "caretaker4@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8835820593",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a89"
+    },
+    "name": "Kavita Shirke",
+    "email": "caretaker5@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8823291212",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "name": "Deepak More",
+    "email": "caretaker6@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Caretaker",
+    "phone": "+91 8868221614",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8b"
+    },
+    "name": "Amit Shinde",
+    "email": "family1@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7758134891",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8c"
+    },
+    "name": "Neha Thakur",
+    "email": "family2@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7739010316",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8d"
+    },
+    "name": "Suresh Iyer",
+    "email": "family3@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7780837108",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8e"
+    },
+    "name": "Meenakshi Nair",
+    "email": "family4@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7791772908",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a8f"
+    },
+    "name": "Ravi Verma",
+    "email": "family5@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7748239742",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a90"
+    },
+    "name": "Priya Menon",
+    "email": "family6@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7748304840",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a91"
+    },
+    "name": "Kunal Naik",
+    "email": "family7@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7757574583",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "name": "Anjali Rao",
+    "email": "family8@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7724794343",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "name": "Siddharth Rane",
+    "email": "family9@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7783245350",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45a94"
+    },
+    "name": "Ritu Desai",
+    "email": "family10@saksham.in",
+    "password": "$2a$10$y74VG/FmDrxGe2WtSXrpnu8bI0KgZcmuHWX2MU1pqxlpfqoLV2H1y",
+    "role": "Family",
+    "phone": "+91 7733419951",
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  }
+]

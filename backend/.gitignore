@@ -1,0 +1,31 @@
+# Node
+node_modules/
+backend/node_modules/
+
+# Env
+.env
+backend/.env
+frontend/.env
+
+# Logs
+*.log
+
+# Uploads
+uploads/
+
+# Flutter
+build/
+frontend/build/
+frontend/.dart_tool/
+.dart_tool/
+.pub/
+.packages
+
+# Android / Gradle
+frontend/.gradle/
+frontend/android/.gradle/
+
+# IDE
+.vscode/
+.idea/
+*.iml

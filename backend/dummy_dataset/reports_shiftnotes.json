@@ -1,0 +1,156 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aea"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "date": "2026-04-22",
+    "shift": "Morning",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [
+      "Minor slip - checked by doctor, all ok."
+    ],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aeb"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "date": "2026-04-22",
+    "shift": "Night",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aec"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "date": "2026-04-22",
+    "shift": "Morning",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aed"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a85"
+    },
+    "date": "2026-04-22",
+    "shift": "Night",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aee"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a86"
+    },
+    "date": "2026-04-22",
+    "shift": "Morning",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aef"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "date": "2026-04-22",
+    "shift": "Night",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45af0"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a89"
+    },
+    "date": "2026-04-22",
+    "shift": "Morning",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45af1"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "date": "2026-04-22",
+    "shift": "Night",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45af2"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a87"
+    },
+    "date": "2026-04-22",
+    "shift": "Morning",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [
+      "Minor slip - checked by doctor, all ok."
+    ],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45af3"
+    },
+    "caretaker": {
+      "$oid": "69e8eb1a9b12c0d85da45a8a"
+    },
+    "date": "2026-04-22",
+    "shift": "Night",
+    "notes": "Handover complete. All residents are stable. Meals consumed actively. No incidents.",
+    "incidents": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  }
+]

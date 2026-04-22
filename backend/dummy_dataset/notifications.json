@@ -1,0 +1,212 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45adb"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45adc"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a91"
+    },
+    "title": "Medication Missed",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45add"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ade"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8d"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45adf"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae0"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "title": "Visitor Arrival",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae1"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8c"
+    },
+    "title": "Visitor Arrival",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae2"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8d"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae3"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8e"
+    },
+    "title": "Visitor Arrival",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae4"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a92"
+    },
+    "title": "Visitor Arrival",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae5"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "title": "Medication Missed",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae6"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a93"
+    },
+    "title": "Routine Check-up",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae7"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8c"
+    },
+    "title": "Medication Missed",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae8"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a8d"
+    },
+    "title": "Visitor Arrival",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": true,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ae9"
+    },
+    "user": {
+      "$oid": "69e8eb1a9b12c0d85da45a94"
+    },
+    "title": "Appointment Scheduled",
+    "message": "This is an auto-generated system notification detailing care updates.",
+    "isRead": false,
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.004Z"
+    }
+  }
+]

@@ -1,0 +1,512 @@
+[
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa4"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a95"
+    },
+    "name": "Atorvastatin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa5"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Levothyroxine",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa6"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9b"
+    },
+    "name": "Levothyroxine",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa7"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9b"
+    },
+    "name": "Atorvastatin",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa8"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aa9"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9d"
+    },
+    "name": "Atorvastatin",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aaa"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aab"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa2"
+    },
+    "name": "Amlodipine",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aac"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aad"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9f"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aae"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a98"
+    },
+    "name": "Atorvastatin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aaf"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a95"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab0"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa0"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab1"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa0"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab2"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9a"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab3"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9a"
+    },
+    "name": "Amlodipine",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab4"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a98"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab5"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9e"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab6"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9d"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab7"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Metformin",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab8"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9e"
+    },
+    "name": "Amlodipine",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ab9"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a95"
+    },
+    "name": "Levothyroxine",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45aba"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a98"
+    },
+    "name": "Ashwagandha Extract",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45abb"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a95"
+    },
+    "name": "Amlodipine",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45abc"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa2"
+    },
+    "name": "Ashwagandha Extract",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45abd"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa3"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45abe"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9e"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45abf"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9b"
+    },
+    "name": "Pantoprazole",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ac0"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45a9f"
+    },
+    "name": "Ashwagandha Extract",
+    "dosage": "1 Tablet",
+    "instructions": "After meal",
+    "scheduledTime": "09:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "69e8eb1a9b12c0d85da45ac1"
+    },
+    "resident": {
+      "$oid": "69e8eb1a9b12c0d85da45aa1"
+    },
+    "name": "Ashwagandha Extract",
+    "dosage": "1 Tablet",
+    "instructions": "Before breakfast",
+    "scheduledTime": "20:00",
+    "frequency": "Daily",
+    "logs": [],
+    "createdAt": {
+      "$date": "2026-04-22T15:36:58.003Z"
+    }
+  }
+]
