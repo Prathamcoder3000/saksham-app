@@ -1,179 +1,226 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/Flutter-02569B?style=for-the-badge&logo=flutter&logoColor=white" />
-<img src="https://img.shields.io/badge/Dart-0175C2?style=for-the-badge&logo=dart&logoColor=white" />
-<img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
-<img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" />
-<img src="https://img.shields.io/badge/Status-Beta-blue?style=for-the-badge" />
+# 🏥 Saksham Smart Care Management System
 
-# 🏥 Saksham Platform
+**A Smart Elderly Care Management Platform connecting Admins, Caretakers, and Families.**
 
-**A comprehensive multi-role healthcare & caretaker management platform**
+[![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)](https://flutter.dev)
+[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=white)](https://expressjs.com/)
+[![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)](https://jwt.io/)
 
-*Empowering administrators, caretakers, and families to manage healthcare activities — all in one place.*
-
-[Features](#-features) · [Project Structure](#-project-structure) · [Tech Stack](#%EF%B8%8F-tech-stack) · [Getting Started](#%EF%B8%8F-getting-started) · [Roadmap](#-roadmap)
+<p align="center">
+    <a href="#-project-overview">Overview</a> •
+    <a href="#-key-modules">Modules</a> •
+    <a href="#-features">Features</a> •
+    <a href="#-tech-stack">Tech Stack</a> •
+    <a href="#-installation--setup">Setup</a> •
+    <a href="#-test-credentials">Demo</a>
+</p>
 
 </div>
 
 ---
 
-## 📁 Project Structure
+## 🌟 Project Overview
 
-This repository is organized into two main components:
+Managing care for the elderly in modern high-paced lives is a challenge. **Saksham** (meaning 'Capable' in Sanskrit) is a comprehensive Smart Care Management System designed to bridge the gap between healthcare facilities, staff, and family members. 
 
-- **`saksham-app/frontend`**: The Flutter mobile application for all user roles.
-- **`saksham-app/backend`**: The Node.js/Express server and REST API.
+It streamlines administrative tasks, empowers caretakers with digital tools, and provides families with real-time peace of mind regarding their loved ones' health and well-being.
+
+### Why Saksham?
+- **Modernizing Care**: Replaces paper logs with a high-performance digital ecosystem.
+- **Transparency**: Every medicine administered and every vital recorded is logged and shared.
+- **Efficiency**: Specialized dashboards for each role to reduce cognitive load.
+- **Trust**: Secure data handling ensuring privacy and reliability.
+
+---
+
+## 🎭 Key Modules
+
+The platform is built on a robust tri-role architecture:
+
+### 🛠️ Admin Dashboard
+The command center for facility management.
+- **Staff Operations**: Complete CRUD for caretakers and medical staff.
+- **Resident Records**: Centralized database for all residents with detailed profiles.
+- **Insightful Reports**: Automated generation of health and activity reports.
+- **Analytics**: Visualization of facility performance and care quality.
+
+### 🧤 Caretaker Interface
+A practical, task-oriented workspace for frontline staff.
+- **Daily Checklist**: Real-time task management to ensure zero missed activities.
+- **Medicine Tracker**: Strict tracking of dosage, timing, and adherence.
+- **Vitals Logger**: Quick entry for BP, Heart Rate, Oxygen, and Temperature.
+- **Assigned Resident Views**: Focused access to information for specific residents.
+
+### 🏠 Family Member Portal
+A warm, accessible window for family members.
+- **Resident Health Status**: At-a-glance health dashboard of their linked relative.
+- **Medicine Logs**: Verification of care quality and medication adherence.
+- **Event Planner**: Calendar view of facility activities and medical appointments.
+- **Real-time Notifications**: Alerts for emergency situations or important updates.
 
 ---
 
 ## ✨ Features
 
-| Feature | Status |
-|---|---|
-| Multi-role login (Admin / Caretaker / Family) | ✅ Done |
-| Admin Dashboard | ✅ Done |
-| Resident Management (Add / Edit / View / Profile) | ✅ Done |
-| Staff Management (Add / View) | ✅ Done |
-| Caretaker Dashboard | ✅ Done |
-| Medicine Tracker | ✅ Done |
-| Daily Checklist | ✅ Done |
-| Emergency SOS | ✅ Done |
-| Family Dashboard | ✅ Done |
-| Reports Module | ✅ Done |
-| Task Management | ✅ Done |
-| Backend API (Node.js + MongoDB) | ✅ Done |
-| JWT Authentication | ✅ Done |
-| Real-time Notifications & Chat | ✅ Done |
-| Multi-language (English / Marathi / Hindi) | ✅ Done |
-| Offline Data Sync | ✅ Done |
-| Advanced Analytics Dashboard | ✅ Done |
-| Image Upload & Profile Photos | ✅ Done |
+- **[x] Secure Role-Based Access Control (RBAC)**: Distinct permissions for Admin, Caretaker, and Family.
+- **[x] Medicine Adherence System**: Digital verification of medication delivery.
+- **[x] Live Vitals Monitoring**: Graphical trends of health indicators.
+- **[x] Resident Profile Management**: Comprehensive digital folders for each resident.
+- **[x] Staff Performance Logging**: Tracking task completion across shifts.
+- **[x] Premium UI/UX**: Minimalist, high-quality design tailored for healthcare use.
+- **[x] Real-time Communication**: Integrated alert system for critical updates.
+- **[x] Analytics & Reporting**: Data-driven insights for facility owners.
+- **[x] Responsive Mobile Experience**: Optimized for all Android and iOS device types.
 
 ---
 
-## 🛠️ Tech Stack
+## 🏗️ Project Architecture
 
-### Frontend
-- **Flutter** — Cross-platform mobile framework
-- **Dart** — Programming language
-- **Material UI** — Component library
-- **Custom Fonts** — Lexend font family
-- **Percent Indicator** — Progress indicators library
-- **fl_chart** — Advanced data visualization
-- **socket_io_client** — Real-time communication
+Saksham follows a standard **Client-Server-Database** architecture ensuring scalability and security:
 
-### Backend
-- **Node.js** & **Express** — REST API server
-- **MongoDB** & **Mongoose** — Database & ORM
-- **JWT** — Authentication & authorization
-- **Multer** — File upload handling
-- **Bcryptjs** — Password hashing
-- **socket.io** — WebSocket implementation
+```mermaid
+graph LR
+    A[Flutter App] -- REST API / HTTPS --> B[Node.js + Express]
+    B -- Mongoose --> C[MongoDB Atlas]
+    B -- Socket.io --> A
+```
+
+- **Frontend**: Flutter (Mobile) acts as the interactive layer for all roles.
+- **Backend**: Node.js/Express handles business logic, authentication, and reporting.
+- **Security**: JWT-based session management and Bcrypt password encryption.
+- **Real-time**: Socket.io for instant health alerts and notification broadcasts.
 
 ---
 
-## ⚙️ Getting Started
+## 🎨 Tech Stack
 
-### 🟢 Backend Setup (Node.js)
+| Layer | Technology |
+| :--- | :--- |
+| **Frontend** | Flutter, Dart |
+| **State Management** | Provider |
+| **Charts** | fl_chart |
+| **Backend** | Node.js, Express.js |
+| **Authentication** | JSON Web Tokens (JWT) |
+| **Database** | MongoDB (Mongoose ODM) |
+| **Real-time** | Socket.io |
+| **Storage** | Multer (for profile images) |
 
-1. **Navigate to backend**:
+---
+
+## 📱 Screenshots
+
+<div align="center">
+  <table style="width:100%">
+    <tr>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Admin+Dashboard" alt="Admin Dashboard"/><br/><sub><b>Admin Dashboard</b></sub></td>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Caretaker+Workspace" alt="Caretaker Dashboard"/><br/><sub><b>Caretaker Workspace</b></sub></td>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Family+Portal" alt="Family Dashboard"/><br/><sub><b>Family Portal</b></sub></td>
+    </tr>
+    <tr>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Medicine+Tracker" alt="Medicine Tracker"/><br/><sub><b>Medicine Tracker</b></sub></td>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Vitals+Graph" alt="Vitals History"/><br/><sub><b>Vitals History</b></sub></td>
+      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Resident+Profile" alt="Resident Profile"/><br/><sub><b>Resident Profile</b></sub></td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## ⚙️ Installation & Setup
+
+### 📦 Prerequisites
+- Flutter SDK (v3.10+)
+- Node.js (v18+)
+- MongoDB Atlas Account or Local MongoDB Instance
+
+### 🚀 Backend Setup
+1. Navigate to the backend directory:
    ```bash
-   cd saksham-app/backend
+   cd backend
    ```
-2. **Install dependencies**:
+2. Install dependencies:
    ```bash
    npm install
    ```
-3. **Configure Environment**:
-   - Create a `.env` file in `saksham-app/backend/`:
+3. Create a `.env` file in the `backend` folder:
    ```env
    PORT=5000
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   NODE_ENV=development
+   MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/saksham
+   JWT_SECRET=your_super_secret_key
    ```
-4. **Run the server**:
+4. Start the server:
    ```bash
    npm run dev
    ```
 
----
-
-### 🔵 Frontend Setup (Flutter)
-
-1. **Navigate to frontend**:
+### 📱 Frontend Setup
+1. Navigate to the frontend directory:
    ```bash
-   cd saksham-app/frontend
+   cd frontend
    ```
-2. **Install dependencies**:
+2. Install dependencies:
    ```bash
    flutter pub get
    ```
-3. **Run the app**:
+3. Update API Endpoint:
+   Check `lib/services/api_service.dart` to point to your server IP/localhost.
+4. Run the app:
    ```bash
    flutter run
    ```
 
 ---
 
-## 📱 Detailed Flutter Setup
+## 🔑 Test Credentials
 
-If you are setting up Flutter for the first time, follow these steps:
+Use these sample credentials to explore the different modules:
 
-### 🪟 Step 1 — Install Android Studio
-1. Go to 👉 [https://developer.android.com/studio](https://developer.android.com/studio)
-2. Click **Download Android Studio** and run the installer
-3. During setup, make sure these components are checked:
-   - ✅ Android SDK, Android SDK Platform, Android Virtual Device (AVD)
-4. Complete the installation and launch Android Studio
-5. Go through the **Setup Wizard** to download the required SDK components (Recommended: API Level 33 or higher)
-
-### 🔧 Step 2 — Configure Android SDK
-1. Open Android Studio → **More Actions** → **SDK Manager**
-2. Under **SDK Platforms**, check **Android 13.0 (Tiramisu) — API 33**
-3. Under **SDK Tools**, check **Android SDK Build-Tools**, **Android Emulator**, **Android SDK Platform-Tools**, and **HAXM**
-4. Click **Apply** to download
-
-### 📱 Step 3 — Create a Virtual Device (Emulator)
-1. In Android Studio → **More Actions** → **Virtual Device Manager**
-2. Click **Create Device**, select a device (e.g., Pixel 6), and a system image (API 33).
-3. Click **Finish** and press the ▶️ **Play** button to start the emulator.
-
-### 🐦 Step 4 — Install Flutter SDK
-1. Download from 👉 [https://flutter.dev/docs/get-started/install](https://flutter.dev/docs/get-started/install)
-2. Extract to a location like `C:\flutter`.
-3. Add `C:\flutter\bin` to your system **Path** environment variable.
-4. Run `flutter doctor` in a terminal to verify installation and accept licenses with `flutter doctor --android-licenses`.
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@saksham.in` | `admin123` |
+| **Caretaker** | `caretaker1@saksham.in` | `caretaker123` |
+| **Family** | `family1@saksham.in` | `family123` |
 
 ---
 
-## 🗺️ Roadmap
+## 🚀 Future Scope
 
-- [x] Full UI/UX Implementation
-- [x] Multi-platform Support (Android/iOS/Web/Windows)
-- [x] Backend API Development
-- [x] JWT & Secure Authentication
-- [x] Resident & Staff Management
-- [x] Medicine Tracking & Daily Checklists
-- [x] Image Upload Integration
-- [x] Real-time Notifications & Chat
-- [x] Multi-language Support (English, Marathi, Hindi)
-- [x] Push Notifications (FCM Integration Ready)
-- [x] Offline Data Sync (Automatic Caching)
-- [x] Advanced Analytics Dashboard
+- **Push Notifications**: Integrated Firebase Cloud Messaging for instant alerts.
+- **AI Health Insights**: Predict health anomalies based on vital trends using ML.
+- **Web Dashboard**: A specialized web interface for large-screen monitoring.
+- **Real-time Chat**: Direct communication channel between Families and Caretakers.
+- **NGO Integration**: Specialized version for non-profit elderly care homes.
+
+---
+
+## 🌍 Project Impact
+
+**Saksham** isn't just a management tool; it's a social impact project. By digitizing old-age home operations, we:
+- Reduce medical errors in geriatric care.
+- Increase transparency for families living far from their loved ones.
+- Empower low-skilled staff with structured workflows.
+- Create a data-driven approach to healthy aging.
+
+---
+
+## 👤 Author
+
+**Pratham**  
+*Lead Developer & UI/UX Designer*  
+[GitHub](https://github.com/Prathamcoder3000) | [LinkedIn](https://linkedin.com)
 
 ---
 
 ## 📄 License
-This project is developed for **educational and academic purposes**. All rights reserved.
+
+This project is licensed under the **MIT License**. Feel free to use it for academic and non-commercial purposes.
+
+---
 
 <div align="center">
-
-**👨‍💻 Developer**
-**Pratham**
-[GitHub: @Prathamcoder3000](https://github.com/Prathamcoder3000)
-
-*Built with ❤️ using Flutter & Node.js*
-**Version:** 1.0.0
+Made with ❤️ for a Smarter Future in Care.
 </div>
