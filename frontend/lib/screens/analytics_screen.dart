@@ -14,6 +14,7 @@ class AnalyticsScreen extends StatefulWidget {
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
   bool _isLoading = true;
+  bool _hasError = false;
   List<ResidentModel> _residents = [];
   ResidentModel? _selectedResident;
   List<dynamic> _vitalsHistory = [];
@@ -27,6 +28,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Future<void> _fetchInitialData() async {
+    setState(() {
+      _isLoading = true;
+      _hasError = false;
+    });
     try {
       final residentsRes = await ApiService.get('/residents');
       final summaryRes = await ApiService.get('/reports/summary');
@@ -35,7 +40,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         final residentsData = jsonDecode(residentsRes.body)['data'] as List;
         setState(() {
           _residents = residentsData.map((r) => ResidentModel.fromJson(r)).toList();
-          _summaryData = jsonDecode(summaryRes.body)['data'];
+          _summaryData = jsonDecode(summaryRes.body)['data'] ?? {};
           _staffActivity = []; // default safe empty
           if (_residents.isNotEmpty) {
             _selectedResident = _residents.first;
@@ -57,9 +62,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         } catch (_) {
           // Staff activity is optional — fail silently
         }
+      } else {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
       }
     } catch (e) {
-      if (mounted) setState(() => _isLoading = false);
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _hasError = true;
+        });
+      }
     }
   }
 
@@ -68,11 +83,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final res = await ApiService.get('/residents/$residentId/vitals/history');
       if (res.statusCode == 200) {
         setState(() {
-          _vitalsHistory = jsonDecode(res.body)['data'];
-          _isLoading = false;
+          _vitalsHistory = jsonDecode(res.body)['data'] ?? [];
         });
       }
     } catch (e) {
+      // Log error if needed
+    } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
@@ -91,58 +107,114 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
       body: _isLoading 
         ? const Center(child: CircularProgressIndicator())
-        : SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 🔹 RESIDENT SELECTOR
-                if (_residents.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
-                    ),
-                    child: DropdownButton<ResidentModel>(
-                      value: _selectedResident,
-                      isExpanded: true,
-                      underline: const SizedBox(),
-                      onChanged: (ResidentModel? newValue) {
-                        if (newValue != null) {
-                          setState(() {
-                            _selectedResident = newValue;
-                            _isLoading = true;
-                          });
-                          _fetchVitalsHistory(newValue.id);
-                        }
-                      },
-                      items: _residents.map<DropdownMenuItem<ResidentModel>>((ResidentModel r) {
-                        return DropdownMenuItem<ResidentModel>(
-                          value: r,
-                          child: Text(r.name),
-                        );
-                      }).toList(),
+        : _hasError
+            ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
+                    const SizedBox(height: 16),
+                    const Text("Failed to load analytics data"),
+                    const SizedBox(height: 8),
+                    ElevatedButton(onPressed: _fetchInitialData, child: const Text("Retry"))
+                  ],
+                ),
+              )
+            : _residents.isEmpty && _summaryData.isEmpty
+                ? const Center(
+                    child: Text("No analytics data available",
+                        style: TextStyle(color: Colors.grey, fontSize: 16)),
+                  )
+                : SingleChildScrollView(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // 📊 SUMMARY CARDS
+                        Row(
+                          children: [
+                            Expanded(child: _summaryCard("Residents", "${_residents.length}", Icons.people, Colors.blue)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _summaryCard("Alerts", "${_summaryData['activeAlerts'] ?? 0}", Icons.warning, Colors.orange)),
+                          ],
+                        ),
+                        const SizedBox(height: 12),
+                        Row(
+                          children: [
+                            Expanded(child: _summaryCard("Check-ins", "${_summaryData['dailyCheckins'] ?? 0}", Icons.check_circle, Colors.green)),
+                            const SizedBox(width: 12),
+                            Expanded(child: _summaryCard("Adherence", "${_summaryData['adherenceRate'] ?? 0}%", Icons.medical_services, Colors.purple)),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+
+                        // 🔹 RESIDENT SELECTOR
+                        if (_residents.isNotEmpty) ...[
+                          _sectionTitle("Resident Vitals Trend"),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                            ),
+                            child: DropdownButton<ResidentModel>(
+                              value: _selectedResident,
+                              isExpanded: true,
+                              underline: const SizedBox(),
+                              onChanged: (ResidentModel? newValue) {
+                                if (newValue != null) {
+                                  setState(() {
+                                    _selectedResident = newValue;
+                                    _isLoading = true;
+                                  });
+                                  _fetchVitalsHistory(newValue.id);
+                                }
+                              },
+                              items: _residents.map<DropdownMenuItem<ResidentModel>>((ResidentModel r) {
+                                return DropdownMenuItem<ResidentModel>(
+                                  value: r,
+                                  child: Text(r.name),
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          _buildLineChart(),
+                        ],
+                        
+                        const SizedBox(height: 24),
+                        
+                        _sectionTitle(l10n.staffActivity),
+                        _buildBarChart(),
+                        const SizedBox(height: 24),
+                        
+                        _sectionTitle(l10n.medicineCompliance),
+                        _buildPieChart(),
+                        const SizedBox(height: 30),
+                      ],
                     ),
                   ),
-                
-                const SizedBox(height: 24),
+    );
+  }
 
-                _sectionTitle(l10n.vitalsTrends),
-                _buildLineChart(),
-                const SizedBox(height: 24),
-                
-                _sectionTitle(l10n.staffActivity),
-                _buildBarChart(),
-                const SizedBox(height: 24),
-                
-                _sectionTitle(l10n.medicineCompliance),
-                _buildPieChart(),
-                const SizedBox(height: 30),
-              ],
-            ),
-          ),
+  Widget _summaryCard(String title, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 12),
+          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+          Text(title, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        ],
+      ),
     );
   }
 

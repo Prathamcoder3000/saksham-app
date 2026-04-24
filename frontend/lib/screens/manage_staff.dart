@@ -10,7 +10,8 @@ import 'resident_list.dart';
 import 'reports_screen.dart';
 
 class ManageStaffScreen extends StatefulWidget {
-  const ManageStaffScreen({super.key});
+  final bool isTab;
+  const ManageStaffScreen({super.key, this.isTab = false});
 
   @override
   State<ManageStaffScreen> createState() => _ManageStaffScreenState();
@@ -56,14 +57,45 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
   Future<void> _fetchData() async {
     try {
       final staffRes = await ApiService.get('/staff');
+      final usersRes = await ApiService.get('/users');
       final statsRes = await ApiService.get('/staff/stats');
 
-      if (staffRes.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(staffRes.body)['data'];
+      if (staffRes.statusCode == 200 && usersRes.statusCode == 200) {
+        final List<dynamic> staffData = jsonDecode(staffRes.body)['data'];
+        final List<dynamic> usersData = jsonDecode(usersRes.body)['data'];
+        
+        // Create a map of staff by user ID for quick lookup
+        final Map<String, dynamic> staffMap = {
+          for (var item in staffData) 
+            if (item['user'] != null) (item['user']['_id'] ?? item['user']['id']): item
+        };
+
+        // Filter and map users (Admin, Caretaker)
+        final List<dynamic> combinedList = [];
+        for (var user in usersData) {
+          if (user['role'] == 'Admin' || user['role'] == 'Caretaker') {
+            final userId = user['_id'] ?? user['id'];
+            final staffRecord = staffMap[userId];
+            
+            combinedList.add({
+              '_id': staffRecord?['_id'] ?? userId,
+              'userId': userId,
+              'user': user,
+              'designation': staffRecord?['designation'] ?? user['role'],
+              'shift': staffRecord?['shift'] ?? 'Day',
+              'status': staffRecord?['status'] ?? 'Active',
+              'isMinimal': staffRecord == null, // Marker for users without full staff record
+            });
+          }
+        }
+
         setState(() {
-          _staffList = data;
+          _staffList = combinedList;
           if (statsRes.statusCode == 200) {
             _stats = jsonDecode(statsRes.body)['data'];
+            // Overwrite total count with our combined list length if backend misses some
+            _stats['total'] = combinedList.length;
+            _stats['active'] = combinedList.where((s) => s['status'] == 'Active').length;
           }
           _isLoading = false;
         });
@@ -82,14 +114,45 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
   }
 
   Future<void> _deleteStaff(String id) async {
+    setState(() => _isLoading = true);
     try {
-      final res = await ApiService.delete('/staff/$id');
+      // 🛡️ Use the robust user deletion endpoint which handles staff cleanup too
+      final res = await ApiService.delete('/users/$id');
+      
       if (res.statusCode == 200) {
-        _fetchData();
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Staff deleted')));
+        await _fetchData();
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Staff record and access removed successfully'), 
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            )
+          );
+        }
+      } else {
+        final data = jsonDecode(res.body);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(data['message'] ?? 'Failed to delete staff'),
+              backgroundColor: Colors.redAccent,
+              behavior: SnackBarBehavior.floating,
+            )
+          );
+          setState(() => _isLoading = false);
+        }
       }
     } catch (e) {
-      // Handle error
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Connection error during deletion'),
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+      }
     }
   }
 
@@ -98,10 +161,7 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
     if (_isLoading) {
         return const Scaffold(body: Center(child: CircularProgressIndicator()));
     }
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFE),
-
-      body: Stack(
+    Widget mainBody = Stack(
         children: [
 
           // 🔝 GLASS APP BAR
@@ -121,11 +181,12 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
                     children: [
                       Row(
                         children: [
+                          if (!widget.isTab)
                           GestureDetector(
-                            onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
+                            onTap: () => Navigator.pop(context),
                             child: const Icon(Icons.arrow_back, color: Color(0xFF004AC6)),
                           ),
-                          const SizedBox(width: 10),
+                          if (!widget.isTab) const SizedBox(width: 10),
                           const Text(
                             "Staff Management",
                             style: TextStyle(
@@ -137,8 +198,6 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
                       ),
                       Row(
                         children: [
-                         
-                          const SizedBox(width: 10),
                           const Icon(Icons.search, color: Colors.grey),
                         ],
                       )
@@ -151,9 +210,13 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
 
           // 🔹 BODY
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 110, 20, 100),
-            child: SingleChildScrollView(
-              child: Column(
+            padding: EdgeInsets.fromLTRB(20, 110, 20, widget.isTab ? 20 : 100),
+            child: RefreshIndicator(
+              onRefresh: _fetchData,
+              color: const Color(0xFF004AC6),
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
                 children: [
 
                   // 📊 STATS (WITH BACKGROUND ICONS)
@@ -200,7 +263,7 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
                   ..._staffList.map((s) {
                     final color = s['status'] == 'Active' ? Colors.green : Colors.grey;
                     return _staff(
-                        s['_id'] ?? '',
+                        s['userId'] ?? '',
                         s['user'] != null ? s['user']['name'] : 'Unknown',
                         s['designation'] ?? 'Staff',
                         s['shift'] ?? 'Day',
@@ -210,14 +273,23 @@ class _ManageStaffScreenState extends State<ManageStaffScreen> {
                   }).toList(),
                   
                   if (_staffList.isEmpty)
-                    const Center(child: Text("No staff members found.")),
+                    const Padding(
+                      padding: EdgeInsets.only(top: 40),
+                      child: Center(child: Text("No staff members found.")),
+                    ),
                 ],
               ),
             ),
           ),
+        ),
+      ],
+    );
 
-        ],
-      ),
+    if (widget.isTab) return mainBody;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6FAFE),
+      body: mainBody,
 
       bottomNavigationBar: Container(
         height: 80,
@@ -424,7 +496,7 @@ Widget _staff(String id, String name, String role, String shift, Color color, Ma
                     builder: (context) => EditStaffScreen(staffData: rawData),
                   ),
                 ).then((value) {
-                  if (value == true) {
+                  if (value == true && context.mounted) {
                     final state = context.findAncestorStateOfType<_ManageStaffScreenState>();
                     state?._fetchData();
                   }

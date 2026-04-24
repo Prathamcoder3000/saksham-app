@@ -109,13 +109,30 @@ exports.addStaff = async (req, res, next) => {
 // @access  Private (Admin)
 exports.updateStaff = async (req, res, next) => {
   try {
-    const staff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-      runValidators: true
-    });
+    let staff = await Staff.findById(req.params.id);
     if (!staff) {
       return res.status(404).json({ success: false, message: 'Staff member not found' });
     }
+
+    // Update associated User details if provided
+    if (req.body.name || req.body.email || req.body.role || req.body.phone) {
+      const userUpdate = {};
+      if (req.body.name) userUpdate.name = req.body.name;
+      if (req.body.email) userUpdate.email = req.body.email;
+      if (req.body.role) userUpdate.role = req.body.role;
+      if (req.body.phone) userUpdate.phone = req.body.phone;
+
+      await User.findByIdAndUpdate(staff.user, userUpdate, {
+        runValidators: true
+      });
+    }
+
+    // Update Staff record
+    staff = await Staff.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    }).populate('user', 'name email role phone');
+
     res.status(200).json({ success: true, data: staff });
   } catch (err) {
     next(err);
@@ -127,10 +144,25 @@ exports.updateStaff = async (req, res, next) => {
 // @access  Private (Admin)
 exports.deleteStaff = async (req, res, next) => {
   try {
-    const staff = await Staff.findByIdAndDelete(req.params.id);
+    const staff = await Staff.findById(req.params.id);
     if (!staff) {
       return res.status(404).json({ success: false, message: 'Staff member not found' });
     }
+
+    // 🛡️ SAFETY CHECK: Prevent self-deletion
+    if (staff.user.toString() === req.user.id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Security Violation: You cannot delete your own administrative account while logged in.' 
+      });
+    }
+
+    // Delete associated User account
+    await User.findByIdAndDelete(staff.user);
+    
+    // Delete Staff record
+    await staff.deleteOne();
+    
     res.status(200).json({ success: true, data: {} });
   } catch (err) {
     next(err);

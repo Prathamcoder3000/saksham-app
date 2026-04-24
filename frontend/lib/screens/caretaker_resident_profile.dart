@@ -20,25 +20,35 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
 
               // 🔝 HEADER
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(Icons.arrow_back, color: Colors.blue),
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 10,
+                            )
+                          ],
                         ),
-                        const SizedBox(width: 10),
-                        const Text(
-                          "Resident Profile",
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: Colors.blue,
-                          ),
-                        ),
-                      ],
+                        child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.blue, size: 18),
+                      ),
+                    ),
+                    const Text(
+                      "Resident Profile",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Color(0xFF1E293B),
+                        letterSpacing: -0.5,
+                      ),
                     ),
                     GestureDetector(
                       onTap: () async {
@@ -49,10 +59,17 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
                           ),
                         );
                         if (result != null) {
-                          // Handle updated data (e.g., refresh profile)
+                          // Handle updated data
                         }
                       },
-                      child: const Icon(Icons.edit, color: Colors.blue),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(Icons.edit_rounded, color: Colors.blue, size: 18),
+                      ),
                     )
                   ],
                 ),
@@ -63,43 +80,68 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
               // 👤 PROFILE
               Column(
                 children: [
-
-                  CircleAvatar(
-                    radius: 55,
-                    backgroundColor: Colors.blue.withOpacity(0.1),
-                    child: Text(
-                      data["name"]![0],
-                      style: const TextStyle(fontSize: 30),
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                    padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.blue,
-                      borderRadius: BorderRadius.circular(20),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.blue.withOpacity(0.1), width: 4),
                     ),
-                    child: Text(
-                      data["room"]!,
-                      style: const TextStyle(color: Colors.white),
+                    child: CircleAvatar(
+                      radius: 50,
+                      backgroundColor: Colors.blue.withOpacity(0.1),
+                      child: Text(
+                        data["name"]![0],
+                        style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, color: Colors.blue),
+                      ),
                     ),
                   ),
 
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 16),
 
-                  const Text(
-                    "ACTIVE",
-                    style: TextStyle(color: Colors.green, letterSpacing: 2),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.blue,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(color: Colors.blue.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))
+                          ],
+                        ),
+                        child: Text(
+                          data["room"]!,
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFDCFCE7),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          children: [
+                            Icon(Icons.circle, size: 8, color: Colors.green),
+                            SizedBox(width: 6),
+                            Text(
+                              "ACTIVE",
+                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 11, letterSpacing: 0.5),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
 
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 12),
 
                   Text(
                     data["name"]!,
                     style: const TextStyle(
-                        fontSize: 24, fontWeight: FontWeight.bold),
+                        fontSize: 26, fontWeight: FontWeight.bold, color: Color(0xFF1E293B), letterSpacing: -0.5),
                   ),
 
                   const SizedBox(height: 8),
@@ -107,12 +149,9 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Chip(label: Text("${data["age"] ?? "N/A"} Years")),
+                      _badge("${data["age"] ?? "N/A"} Years"),
                       const SizedBox(width: 10),
-                      const Chip(
-                        label: Text("Active Care"),
-                        avatar: Icon(Icons.verified, size: 16),
-                      ),
+                      _badge("Regular Care", icon: Icons.verified_rounded),
                     ],
                   ),
                 ],
@@ -169,43 +208,55 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
               // 🚨 QUICK ACTIONS (caretaker specific)
               Container(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Colors.blue, Colors.teal],
+                    colors: [Colors.blue, Color(0xFF3B82F6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.blue.withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    )
+                  ],
                 ),
                 child: Column(
                   children: [
-
-                    const Row(
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.warning, color: Colors.white),
-                        SizedBox(width: 8),
-                        Text("Quick Actions",
+                        Icon(Icons.bolt_rounded, color: Colors.white.withOpacity(0.8), size: 20),
+                        const SizedBox(width: 8),
+                        const Text("QUICK ACTIONS",
                             style: TextStyle(
                                 color: Colors.white,
-                                fontWeight: FontWeight.bold)),
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.0,
+                                fontSize: 12)),
                       ],
                     ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 20),
 
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-
-                        _actionBtn(Icons.phone, "Call", () {
-                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Calling emergency contact...")));
+                        _actionBtn(Icons.call_rounded, "Call", () {
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Initiating call...")));
                         }),
-                        _actionBtn(Icons.medication, "Med", () {
+                        _actionBtn(Icons.medication_rounded, "Meds", () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const MedicineTrackerScreen()));
                         }),
-                        _actionBtn(Icons.warning, "SOS", () {
+                        _actionBtn(Icons.assignment_rounded, "Tasks", () {
+                          // Already on resident profile, maybe show specific tasks
+                        }),
+                        _actionBtn(Icons.sos_rounded, "SOS", () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const EmergencySOSScreen()));
                         }),
-
                       ],
                     )
                   ],
@@ -229,24 +280,61 @@ class CaretakerResidentProfileScreen extends StatelessWidget {
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          )
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(icon, color: iconColor),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: iconColor, size: 18),
+              ),
+              const SizedBox(width: 12),
               Text(title,
-                  style: const TextStyle(fontWeight: FontWeight.bold)),
+                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E293B))),
             ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
           child,
+        ],
+      ),
+    );
+  }
+
+  static Widget _badge(String text, {IconData? icon}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, size: 14, color: const Color(0xFF64748B)),
+            const SizedBox(width: 6),
+          ],
+          Text(
+            text,
+            style: const TextStyle(color: Color(0xFF64748B), fontWeight: FontWeight.w600, fontSize: 12),
+          ),
         ],
       ),
     );
@@ -262,12 +350,12 @@ class _info extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.only(bottom: 12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: const TextStyle(color: Colors.grey)),
-          Text(value),
+          Text(title, style: const TextStyle(color: Color(0xFF94A3B8), fontWeight: FontWeight.w500)),
+          Text(value, style: const TextStyle(fontWeight: FontWeight.bold, color: Color(0xFF334155))),
         ],
       ),
     );
@@ -307,12 +395,20 @@ Widget _actionBtn(IconData icon, String label, VoidCallback onTap) {
     onTap: onTap,
     child: Column(
       children: [
-        CircleAvatar(
-          backgroundColor: Colors.white,
-          child: Icon(icon, color: Colors.blue),
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Icon(icon, color: Colors.white, size: 24),
         ),
-        const SizedBox(height: 6),
-        Text(label, style: const TextStyle(color: Colors.white)),
+        const SizedBox(height: 8),
+        Text(
+          label, 
+          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 12)
+        ),
       ],
     ),
   );

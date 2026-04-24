@@ -18,6 +18,7 @@ class _CaretakerAddResidentScreenState
   final conditionController = TextEditingController();
   final contactController = TextEditingController();
   final phoneController = TextEditingController();
+  final emailController = TextEditingController(); // NEW: Family Email
   final roomController = TextEditingController();
   bool _isSaving = false;
 
@@ -31,20 +32,21 @@ class _CaretakerAddResidentScreenState
 
     setState(() => _isSaving = true);
     try {
-final response = await ApiService.post('/residents/caretaker-add', {
+      final response = await ApiService.post('/residents/caretaker-add', {
         "name": nameController.text,
         "age": int.tryParse(ageController.text) ?? 0,
         "room": roomController.text.isEmpty ? "New Wing" : roomController.text,
         "conditions": conditionController.text.split(','),
-        "emergencyContactName": contactController.text,
-        "emergencyContactPhone": phoneController.text,
+        "emergencyContactName": contactController.text, // Mapped to Family User Name
+        "emergencyContactPhone": phoneController.text,  // Mapped to Family Phone
+        "familyEmail": emailController.text,            // Used for finding/creating Family User
       });
 
       if (response.statusCode == 201) {
         final newResident = jsonDecode(response.body)['data'];
         if (mounted) {
            ScaffoldMessenger.of(context).showSnackBar(
-             const SnackBar(content: Text("Resident added!"), backgroundColor: Colors.green),
+             const SnackBar(content: Text("Resident added & Family account linked!"), backgroundColor: Colors.green),
            );
            Navigator.pop(context, newResident);
         }
@@ -156,14 +158,20 @@ final response = await ApiService.post('/residents/caretaker-add', {
 
               const SizedBox(height: 16),
 
-              // 📞 CONTACT
+              // 📞 CONTACT & FAMILY LINKING
               _card(
-                "Emergency Contact",
-                Icons.phone,
+                "Family & Emergency Contact",
+                Icons.family_restroom,
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _field("Contact Name", contactController),
+                    const Padding(
+                      padding: EdgeInsets.only(bottom: 12, left: 4),
+                      child: Text("Entering an email will auto-create a Family portal account.", style: TextStyle(fontSize: 12, color: Colors.blueGrey)),
+                    ),
+                    _field("Family Member Name", contactController),
                     _field("Phone Number", phoneController),
+                    _field("Family Email Address", emailController),
                   ],
                 ),
               ),

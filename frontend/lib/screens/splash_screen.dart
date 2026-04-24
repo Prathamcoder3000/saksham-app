@@ -1,28 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
-import 'login_screen.dart';
-import 'role_selection.dart';
 import 'dashboard_screen.dart';
 import 'caretaker_dashboard.dart';
 import 'family_dashboard.dart';
+import 'role_selection.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
+  State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _fadeAnimation;
+
   @override
   void initState() {
     super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _controller, curve: Curves.easeIn),
+    );
+    _controller.forward();
     _initializeApp();
   }
 
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   Future<void> _initializeApp() async {
-    // Wait for the splash animation
+    // Artificial delay for splash effect
     await Future.delayed(const Duration(seconds: 3));
 
     if (!mounted) return;
@@ -33,8 +49,7 @@ class _SplashScreenState extends State<SplashScreen> {
     if (!mounted) return;
 
     if (isLoggedIn) {
-      // Navigate based on role
-      final role = authProvider.user?.role ?? 'Caretaker';
+      final role = authProvider.user?.role ?? '';
       Widget nextScreen;
       
       switch (role) {
@@ -53,12 +68,24 @@ class _SplashScreenState extends State<SplashScreen> {
 
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => nextScreen),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => nextScreen,
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
       );
     } else {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const RoleSelectionScreen()),
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => const RoleSelectionScreen(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+          transitionDuration: const Duration(milliseconds: 800),
+        ),
       );
     }
   }
@@ -68,7 +95,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             colors: [Color(0xFF2563EB), Color(0xFF14B8A6)],
             begin: Alignment.topLeft,
@@ -76,9 +103,9 @@ class _SplashScreenState extends State<SplashScreen> {
           ),
         ),
         child: Stack(
+          alignment: Alignment.center,
           children: [
-
-            // 🔵 Background glow circles
+            // Ambient Glow
             Positioned(
               top: -100,
               right: -100,
@@ -92,137 +119,78 @@ class _SplashScreenState extends State<SplashScreen> {
               ),
             ),
 
-            Positioned(
-              bottom: -80,
-              left: -80,
-              child: Container(
-                width: 250,
-                height: 250,
-                decoration: BoxDecoration(
-                  color: Colors.teal.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-              ),
-            ),
-
-            // 🔥 MAIN CONTENT
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-
-                // Glass Icon Box
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white30),
-                  ),
-                  child: Icon(
-                    Icons.volunteer_activism,
-                    size: 50,
-                    color: Colors.white,
-                  ),
-                ),
-
-                SizedBox(height: 30),
-
-                // App Name
-                Text(
-                  "Saksham",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 42,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-
-                SizedBox(height: 10),
-
-                // Tagline
-                Text(
-                  "Empowering Elderly Care",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 16,
-                  ),
-                ),
-              ],
-            ),
-
-            // 🔻 Bottom Section
-            Positioned(
-              bottom: 100,
-              left: 0,
-              right: 0,
+            FadeTransition(
+              opacity: _fadeAnimation,
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-
-                  // Progress Bar
+                  // Logo
                   Container(
-                    width: 140,
-                    height: 4,
+                    padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2),
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white30),
                     ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Container(
-                        width: 60,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
+                    child: const Icon(
+                      Icons.volunteer_activism,
+                      size: 60,
+                      color: Colors.white,
                     ),
                   ),
-
-                  SizedBox(height: 20),
-
-                  // Text
-                  Text(
-                    "INITIALIZING DIGITAL SANCTUARY",
+                  const SizedBox(height: 24),
+                  // App Name
+                  const Text(
+                    "Saksham",
                     style: TextStyle(
-                      color: Colors.white60,
-                      fontSize: 10,
+                      color: Colors.white,
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
                       letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  // Tagline
+                  Text(
+                    "Smart Care Management",
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.8),
+                      fontSize: 16,
+                      letterSpacing: 1.2,
                     ),
                   ),
                 ],
               ),
             ),
 
-            // 🔻 Bottom dots
+            // Loading Indicator at bottom
             Positioned(
-              bottom: 40,
-              left: 0,
-              right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              bottom: 80,
+              child: Column(
                 children: [
-                  _dot(true),
-                  _dot(false),
-                  _dot(false),
+                  const SizedBox(
+                    width: 40,
+                    height: 40,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    "Initializing Digital Sanctuary...".toUpperCase(),
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.6),
+                      fontSize: 10,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
                 ],
               ),
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _dot(bool active) {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 4),
-      width: 6,
-      height: 6,
-      decoration: BoxDecoration(
-        color: active ? Colors.white : Colors.white38,
-        shape: BoxShape.circle,
       ),
     );
   }

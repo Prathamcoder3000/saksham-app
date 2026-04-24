@@ -3,14 +3,104 @@ import 'package:provider/provider.dart';
 import 'role_selection.dart';
 import '../providers/auth_provider.dart';
 import '../l10n/app_localizations.dart';
+import '../services/api_service.dart';
+import 'change_password_screen.dart';
+import 'dart:convert';
 
-class AdminProfileScreen extends StatelessWidget {
+class AdminProfileScreen extends StatefulWidget {
   const AdminProfileScreen({super.key});
 
   @override
+  State<AdminProfileScreen> createState() => _AdminProfileScreenState();
+}
+
+class _AdminProfileScreenState extends State<AdminProfileScreen> {
+  bool _isEditing = false;
+  late TextEditingController _nameController;
+  late TextEditingController _phoneController;
+  late TextEditingController _emailController;
+  
+  // NGO Details from API
+  String _branchName = "Loading...";
+  String _officeAddress = "Loading...";
+  String _workingHours = "Loading...";
+  Map<String, dynamic> _summaryData = {};
+  bool _isLoadingData = true;
+
+  @override
+  void initState() {
+    super.initState();
+    final auth = Provider.of<AuthProvider>(context, listen: false);
+    _nameController = TextEditingController(text: auth.user?.name ?? '');
+    _emailController = TextEditingController(text: auth.user?.email ?? '');
+    _phoneController = TextEditingController(text: auth.user?.phone ?? '');
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    setState(() => _isLoadingData = true);
+    try {
+      final facilityRes = await ApiService.get('/facility');
+      final summaryRes = await ApiService.get('/reports/summary');
+      
+      if (facilityRes.statusCode == 200) {
+        final data = jsonDecode(facilityRes.body)['data'];
+        if (data != null) {
+          _branchName = data['branchName'] ?? data['name'] ?? "Saksham Main";
+          _officeAddress = data['officeAddress'] ?? data['address'] ?? "Gurgaon, India";
+          _workingHours = data['workingHours'] ?? "09:00 AM - 06:00 PM";
+        }
+      }
+      
+      if (summaryRes.statusCode == 200) {
+        _summaryData = jsonDecode(summaryRes.body)['data'] ?? {};
+      }
+    } catch (e) {
+      // Fail silently
+    } finally {
+      if (mounted) setState(() => _isLoadingData = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _phoneController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSave() async {
+    setState(() => _isEditing = false);
+    try {
+      final res = await ApiService.put('/users/me', {
+        'name': _nameController.text.trim(),
+        'email': _emailController.text.trim(),
+        'phone': _phoneController.text.trim(),
+      });
+      
+      if (res.statusCode == 200) {
+        // Refresh local user data
+        if (mounted) {
+           await Provider.of<AuthProvider>(context, listen: false).tryAutoLogin();
+           ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Profile updated successfully")));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Error updating profile")));
+      }
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 60, left: 16, right: 16, bottom: 120),
+    return RefreshIndicator(
+      onRefresh: _fetchData,
+      color: const Color(0xFF1D4ED8),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(16, 60, 16, 120),
       child: Consumer<AuthProvider>(
         builder: (context, auth, _) {
           final name = auth.user?.name ?? 'Admin';
@@ -20,124 +110,138 @@ class AdminProfileScreen extends StatelessWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                AppLocalizations.of(context)!.profile,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFF1D4ED8),
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                   Text(
+                    AppLocalizations.of(context)!.profile,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1D4ED8),
+                    ),
+                  ),
+                  if (!_isEditing)
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Color(0xFF1D4ED8)),
+                    onPressed: () => setState(() => _isEditing = true),
+                  )
+                  else
+                  Row(
+                    children: [
+                       TextButton(
+                         onPressed: () => setState(() => _isEditing = false),
+                         child: const Text("Cancel")
+                       ),
+                       TextButton(
+                         onPressed: _handleSave,
+                         child: const Text("Save", style: TextStyle(fontWeight: FontWeight.bold))
+                       ),
+                    ],
+                  )
+                ],
               ),
               const SizedBox(height: 24),
 
-              // Profile Header — real data from AuthProvider
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(22),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.blue.withOpacity(0.05),
-                      blurRadius: 20,
-                      offset: const Offset(0, 4),
-                    )
-                  ],
-                ),
-                child: Row(
+              // ── SECTION 1: IDENTITY ──
+              Center(
+                child: Column(
                   children: [
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: const Color(0xFF1D4ED8),
-                      child: Text(
-                        initial,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            name,
+                    Stack(
+                      children: [
+                        CircleAvatar(
+                          radius: 50,
+                          backgroundColor: const Color(0xFF2563EB),
+                          child: Text(
+                            initial,
                             style: const TextStyle(
-                              fontSize: 18,
+                              color: Colors.white,
+                              fontSize: 40,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            email,
-                            style: TextStyle(color: Colors.grey.shade600),
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
+                            child: const Icon(Icons.check, color: Colors.white, size: 16),
                           ),
-                          const SizedBox(height: 4),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1D4ED8).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: const Text(
-                              'Administrator',
-                              style: TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF1D4ED8),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                        )
+                      ],
                     ),
+                    const SizedBox(height: 16),
+                    if (!_isEditing) ...[
+                      Text(name, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                      const Text("NGO Administrator", style: TextStyle(color: Colors.blueAccent, fontWeight: FontWeight.w600)),
+                    ] else ...[
+                       _editField("Full Name", _nameController),
+                    ]
                   ],
                 ),
               ),
+              
               const SizedBox(height: 30),
 
-              Text(
-                AppLocalizations.of(context)!.settings,
-                style: const TextStyle(
-                    fontSize: 16, fontWeight: FontWeight.bold),
+              // ── INFO CARDS ──
+              _infoCard(
+                title: "Contact Information",
+                icon: Icons.contact_mail,
+                children: [
+                  _infoTile("Email", email, Icons.email, _isEditing ? _emailController : null),
+                  _infoTile("Phone", auth.user?.phone ?? "+91 98765 43210", Icons.phone, _isEditing ? _phoneController : null),
+                ],
               ),
-              const SizedBox(height: 12),
-              _settingsTile(
-                  context, Icons.store, "Facility Details", "Manage branches & locations"),
-              _settingsTile(
-                  context, Icons.groups, "Staff Permissions", "Role-based access lists"),
-              _settingsTile(
-                  context, Icons.backup, "Data & Integrations", "Export records and logs"),
+              
+              const SizedBox(height: 16),
+
+              _infoCard(
+                title: "NGO Branch Details",
+                icon: Icons.business,
+                children: [
+                  _infoTile("Branch Name", _branchName, Icons.store),
+                  _infoTile("Office Address", _officeAddress, Icons.location_on),
+                  _infoTile("Working Hours", _workingHours, Icons.access_time),
+                ],
+              ),
+
+              const SizedBox(height: 16),
+
+              _infoCard(
+                title: "Administrative summary",
+                icon: Icons.analytics,
+                children: [
+                   Row(
+                     mainAxisAlignment: MainAxisAlignment.spaceAround,
+                     children: [
+                        _smallStat("${_summaryData['residentCount'] ?? _summaryData['dailyCheckins'] ?? '0'}", "Residents"),
+                        _smallStat("${_summaryData['staffActive'] ?? '12'}", "Active Staff"),
+                        _smallStat("${_summaryData['activeAlerts'] ?? '0'}", "Facility Alerts"),
+                     ],
+                   )
+                ],
+              ),
 
               const SizedBox(height: 30),
 
-              const Text(
-                "Security",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 12),
+              // ── ACTIONS ──
               _settingsTile(
-                  context, Icons.security, "Two-Factor Auth", "Currently Active"),
-              _settingsTile(
-                  context, Icons.history, "Audit Logs", "Review administrative actions"),
-
-              const SizedBox(height: 40),
+                  context, Icons.lock_reset, "Change Password", "Update your security credentials", onTap: () {
+                     Navigator.push(context, MaterialPageRoute(builder: (_) => const ChangePasswordScreen()));
+                  }),
+              
+              const SizedBox(height: 24),
 
               Center(
                 child: TextButton.icon(
                   onPressed: () async {
-                    // Fix: properly clear auth state before navigating
-                    await Provider.of<AuthProvider>(context, listen: false)
-                        .logout();
+                    await Provider.of<AuthProvider>(context, listen: false).logout();
                     if (!context.mounted) return;
                     Navigator.pushAndRemoveUntil(
                       context,
-                      MaterialPageRoute(
-                          builder: (_) => const RoleSelectionScreen()),
+                      MaterialPageRoute(builder: (_) => const RoleSelectionScreen()),
                       (route) => false,
                     );
                   },
@@ -155,22 +259,95 @@ class AdminProfileScreen extends StatelessWidget {
           );
         },
       ),
+    ),
     );
   }
 
-  Widget _settingsTile(
-      BuildContext context, IconData icon, String title, String subtitle) {
-    return GestureDetector(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("$title coming soon!"),
-            behavior: SnackBarBehavior.floating,
+  Widget _editField(String label, TextEditingController controller) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: TextField(
+        controller: controller,
+        textAlign: TextAlign.center,
+        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+        decoration: InputDecoration(
+          hintText: label,
+          contentPadding: EdgeInsets.zero,
+        ),
+      ),
+    );
+  }
+
+  Widget _infoCard({required String title, required IconData icon, required List<Widget> children}) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10)],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: Colors.grey, size: 18),
+              const SizedBox(width: 8),
+              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.grey)),
+            ],
           ),
-        );
+          const Divider(height: 24),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _infoTile(String label, String value, IconData icon, [TextEditingController? controller]) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Icon(icon, size: 20, color: const Color(0xFF2563EB)),
+          const SizedBox(width: 12),
+          Expanded(
+            child: controller == null 
+              ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+                  Text(value, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+                ],
+              )
+              : TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: label,
+                    isDense: true,
+                    contentPadding: const EdgeInsets.symmetric(vertical: 4),
+                  ),
+                ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _smallStat(String value, String label) {
+    return Column(
+      children: [
+        Text(value, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        Text(label, style: const TextStyle(fontSize: 10, color: Colors.grey)),
+      ],
+    );
+  }
+
+  Widget _settingsTile(BuildContext context, IconData icon, String title, String subtitle, {VoidCallback? onTap}) {
+    return GestureDetector(
+      onTap: onTap ?? () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$title coming soon!")));
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -180,10 +357,7 @@ class AdminProfileScreen extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: const Color(0xFFF0F4F8),
-                borderRadius: BorderRadius.circular(12),
-              ),
+              decoration: BoxDecoration(color: const Color(0xFFF0F4F8), borderRadius: BorderRadius.circular(12)),
               child: Icon(icon, color: const Color(0xFF1D4ED8)),
             ),
             const SizedBox(width: 16),
@@ -191,16 +365,8 @@ class AdminProfileScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                        fontWeight: FontWeight.bold, fontSize: 15),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                        color: Colors.grey.shade600, fontSize: 13),
-                  ),
+                  Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  Text(subtitle, style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
                 ],
               ),
             ),

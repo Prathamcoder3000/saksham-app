@@ -7,7 +7,11 @@ exports.getResidents = async (req, res, next) => {
   try {
     let query;
     if (req.user.role === 'Family') {
-      query = Resident.find({ family: req.user.id });
+      const residents = await Resident.find({ family: req.user.id }).populate('assignedCaretaker', 'name email');
+      if (!residents || residents.length === 0) {
+        return res.status(404).json({ success: false, message: 'No resident linked to your account. Please contact support.' });
+      }
+      return res.status(200).json({ success: true, count: residents.length, data: residents });
     } else {
       query = Resident.find();
     }
@@ -28,6 +32,10 @@ exports.getResident = async (req, res, next) => {
     if (!resident) {
       return res.status(404).json({ success: false, message: 'Resident not found' });
     }
+    // Security check: Family can only see their own resident
+    if (req.user.role === 'Family' && resident.family.toString() !== req.user.id) {
+       return res.status(403).json({ success: false, message: 'Not authorized to access this resident' });
+    }
     res.status(200).json({ success: true, data: resident });
   } catch (err) {
     next(err);
@@ -39,7 +47,39 @@ exports.getResident = async (req, res, next) => {
 // @access  Private (Admin)
 exports.createResident = async (req, res, next) => {
   try {
-    const resident = await Resident.create(req.body);
+    const User = require('../models/User');
+    let familyUserId = null;
+    let emergencyContactName = req.body.emergencyContactName;
+    let emergencyContactPhone = req.body.emergencyContactPhone;
+
+    // Check if familyEmail was provided
+    if (req.body.familyEmail) {
+        let familyUser = await User.findOne({ email: req.body.familyEmail, role: 'Family' });
+        if (familyUser) {
+            familyUserId = familyUser._id;
+            emergencyContactName = familyUser.name;
+            emergencyContactPhone = familyUser.phone || emergencyContactPhone;
+        } else {
+            // Create new family user
+            familyUser = await User.create({
+                name: emergencyContactName || 'Family Member',
+                email: req.body.familyEmail,
+                phone: emergencyContactPhone,
+                role: 'Family',
+                password: 'SakshamPassword123!' // Default password for new family users
+            });
+            familyUserId = familyUser._id;
+        }
+    }
+
+    const residentData = {
+        ...req.body,
+        family: familyUserId,
+        emergencyContactName: emergencyContactName,
+        emergencyContactPhone: emergencyContactPhone,
+    };
+
+    const resident = await Resident.create(residentData);
     res.status(201).json({ success: true, data: resident });
   } catch (err) {
     next(err);
@@ -51,10 +91,38 @@ exports.createResident = async (req, res, next) => {
 // @access  Private (Caretaker)
 exports.caretakerCreateResident = async (req, res, next) => {
     try {
+      const User = require('../models/User');
+      let familyUserId = null;
+      let emergencyContactName = req.body.emergencyContactName;
+      let emergencyContactPhone = req.body.emergencyContactPhone;
+
+      // Logic to find or create Family User based on email
+      if (req.body.familyEmail) {
+          let familyUser = await User.findOne({ email: req.body.familyEmail, role: 'Family' });
+          if (familyUser) {
+              familyUserId = familyUser._id;
+              emergencyContactName = familyUser.name;
+              emergencyContactPhone = familyUser.phone || emergencyContactPhone;
+          } else {
+              // Create new family user
+              familyUser = await User.create({
+                  name: emergencyContactName || 'Family Member',
+                  email: req.body.familyEmail,
+                  phone: emergencyContactPhone,
+                  role: 'Family',
+                  password: 'SakshamPassword123!' // Default password
+              });
+              familyUserId = familyUser._id;
+          }
+      }
+
       // Logic for caretaker limited field creation
       const resident = await Resident.create({
           ...req.body,
-          assignedCaretaker: req.user.id
+          assignedCaretaker: req.user.id,
+          family: familyUserId,
+          emergencyContactName: emergencyContactName,
+          emergencyContactPhone: emergencyContactPhone,
       });
       res.status(201).json({ success: true, data: resident });
     } catch (err) {

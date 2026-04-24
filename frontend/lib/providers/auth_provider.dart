@@ -88,6 +88,28 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
+  // Update Profile
+  Future<bool> updateProfile(Map<String, dynamic> updateData) async {
+    try {
+      final response = await ApiService.put('/users/me', updateData);
+      final responseData = jsonDecode(response.body);
+
+      if (response.statusCode == 200 && responseData['success']) {
+        _user = UserModel.fromJson(responseData['data']);
+        
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userData', jsonEncode(_user!.toJson()));
+        
+        notifyListeners();
+        return true;
+      }
+      return false;
+    } catch (e) {
+      debugPrint("Update error: $e");
+      return false;
+    }
+  }
+
   // Logout
   Future<void> logout() async {
     _user = null;

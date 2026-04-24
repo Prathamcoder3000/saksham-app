@@ -4,8 +4,10 @@ import 'package:saksham/services/api_service.dart';
 import 'dart:convert';
 import '../extensions/localization_extension.dart';
 import 'add_task_screen.dart';
+import 'caretaker_dashboard.dart';
 class DailyChecklistScreen extends StatefulWidget {
-  const DailyChecklistScreen({super.key});
+  final bool isTab;
+  const DailyChecklistScreen({super.key, this.isTab = false});
 
   @override
   State<DailyChecklistScreen> createState() => _DailyChecklistScreenState();
@@ -26,17 +28,23 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
       final response = await ApiService.get('/tasks');
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body)['data'];
-        setState(() {
-          tasks = data.map((json) => TaskModel.fromJson(json)).toList();
-          _isLoading = false;
-        });
+        if (mounted) {
+          setState(() {
+            tasks = data.map((json) => TaskModel.fromJson(json)).toList();
+            _isLoading = false;
+          });
+        }
       } else {
-        setState(() => _isLoading = false);
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load tasks')));
+        if (mounted) {
+          setState(() => _isLoading = false);
+          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load tasks')));
+        }
       }
     } catch (e) {
-      setState(() => _isLoading = false);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Check your connection.')));
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Check your connection.')));
+      }
     }
   }
 
@@ -71,234 +79,400 @@ class _DailyChecklistScreenState extends State<DailyChecklistScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFE),
-
+      backgroundColor: const Color(0xFFF1F5F9),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+        leading: widget.isTab ? null : IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF64748B), size: 20),
+          onPressed: () {
+            if (Navigator.canPop(context)) {
+              Navigator.pop(context);
+            } else {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const CaretakerDashboard()),
+              );
+            }
+          },
+        ),
+        title: Text(
+          context.l10n!.daily_checklist,
+          style: const TextStyle(
+            color: Color(0xFF1E293B),
+            fontWeight: FontWeight.bold,
+            fontSize: 18,
+            letterSpacing: -0.5,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-
-            // 🔝 HEADER
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 📅 DATE & PROGRESS
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  GestureDetector(
-                    onTap: () => Navigator.popUntil(context, (route) => route.isFirst),
-                    child: const Icon(Icons.arrow_back, color: Colors.blue),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        _liveDate.toUpperCase(),
+                        style: const TextStyle(
+                          color: Color(0xFF94A3B8),
+                          fontWeight: FontWeight.bold,
+                          fontSize: 11,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        "Today's Routines",
+                        style: TextStyle(
+                          fontSize: 26,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF1E293B),
+                          letterSpacing: -0.8,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(width: 10),
-                  Text(context.l10n!.daily_checklist,
-                          style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Colors.blue)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      "$done/$total Done",
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF10B981),
+                      ),
+                    ),
+                  ),
                 ],
               ),
-            ),
 
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+                    const SizedBox(height: 18),
 
-                    // 📅 DATE
-                    const Row(
-                      children: [
-                        Icon(Icons.calendar_today, color: Colors.blue),
-                        SizedBox(width: 6),
-                        Text("TODAY'S SCHEDULE",
-                            style: TextStyle(
-                                color: Colors.blue,
-                                fontWeight: FontWeight.w500)),
-                      ],
+                    // 📊 STATS CARDS (Elegantly Balanced)
+                    Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(24),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF1E293B).withOpacity(0.04),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          )
+                        ],
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              _statItem("$total", "TOTAL", const Color(0xFF2563EB)),
+                              _divider(),
+                              _statItem("$done", "DONE", const Color(0xFF10B981)),
+                              _divider(),
+                              _statItem("$left", "LEFT", const Color(0xFF64748B)),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                          Stack(
+                            children: [
+                              Container(
+                                height: 10,
+                                width: double.infinity,
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF1F5F9),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 800),
+                                height: 10,
+                                width: (total > 0) ? (MediaQuery.of(context).size.width - 88) * (done / total) : 0,
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFF2563EB), Color(0xFF10B981)],
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFF2563EB).withOpacity(0.2),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
 
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 32),
 
-                    Text(
-                    _liveDate,
-                      style: const TextStyle(
-                          fontSize: 30,
-                          fontWeight: FontWeight.bold),
+                    // 🌅 TASKS SECTION
+                    const Text(
+                      "ACTIVE TASKS",
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF94A3B8),
+                        letterSpacing: 2.0,
+                      ),
                     ),
+                    const SizedBox(height: 16),
 
-                    const SizedBox(height: 20),
-
-                    // 📊 STATS
-                    Row(
-                      children: [
-                        _stat("$total", "TOTAL", Colors.white),
-                        const SizedBox(width: 10),
-                        _stat("$done", "DONE", Colors.teal.shade100, isGreen: true),
-                        const SizedBox(width: 10),
-                        _stat("$left", "LEFT", Colors.grey.shade300),
-                      ],
-                    ),
-
-                    const SizedBox(height: 25),
-
-                    // 🌅 TASKS LIST
                     _isLoading 
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(40),
+                            child: CircularProgressIndicator(color: Color(0xFF2563EB), strokeWidth: 2),
+                          ),
+                        )
                       : RefreshIndicator(
                           onRefresh: _fetchTasks,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                                _sectionTitle("Today's Tasks", Icons.checklist),
+                              if (tasks.isEmpty)
+                                Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(vertical: 60),
+                                    child: Column(
+                                      children: [
+                                        Icon(Icons.assignment_turned_in_outlined, size: 48, color: Colors.grey.withOpacity(0.3)),
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          "All caught up for today!",
+                                          style: TextStyle(color: Colors.grey.shade400, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                )
+                              else
                                 ...tasks.asMap().entries.map((entry) => _taskCard(entry.key)).toList(),
-                                if (tasks.isEmpty)
-                                    const Center(child: Text("No tasks assigned for today.")),
+                              
+                              const SizedBox(height: 12),
+                              
+                              // ➕ PREMIUM ACTION BUTTON
+                              GestureDetector(
+                                onTap: () async {
+                                  await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => const AddTaskScreen()),
+                                  );
+                                  _fetchTasks();
+                                },
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.symmetric(vertical: 18),
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Color(0xFF2563EB), Color(0xFF3B82F6)],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    borderRadius: BorderRadius.circular(30),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: const Color(0xFF2563EB).withOpacity(0.3),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 10),
+                                      )
+                                    ],
+                                  ),
+                                  child: const Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(Icons.add_circle_outline_rounded, color: Colors.white, size: 22),
+                                      SizedBox(width: 10),
+                                      Text(
+                                        "Add New Task",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ],
                           ),
                         ),
-                  ],
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-
-      // ➕ FAB
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddTaskScreen(),
-            ),
-          );
-          _fetchTasks(); // Refresh list after adding
-        },
-        child: const Icon(Icons.add),
-      ),
-
     );
   }
 
   // 📊 STAT CARD
-  Widget _stat(String value, String label, Color color, {bool isGreen = false}) {
+  Widget _statItem(String value, String label, Color color) {
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(14),
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Text(value,
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: isGreen ? Colors.green : Colors.black)),
-            Text(label,
-                style: const TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600)),
-          ],
-        ),
-      ),
-    );
-  }
-
-  // 🏷 SECTION TITLE
-  Widget _sectionTitle(String title, IconData icon) {
-    return Row(
-      children: [
-        CircleAvatar(
-          backgroundColor: Colors.blue.withOpacity(0.2),
-          child: Icon(icon, color: Colors.blue),
-        ),
-        const SizedBox(width: 10),
-        Text(title,
-            style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold)),
-        const Expanded(
-          child: Divider(indent: 10),
-        )
-      ],
-    );
-  }
-
-  // 📋 TASK CARD
-  Widget _taskCard(int index) {
-    final task = tasks[index];
-
-    bool isDone = task.status == "done";
-
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: task.status == "progress"
-            ? const Border(left: BorderSide(color: Colors.blue, width: 4))
-            : null,
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
         children: [
-
-          // LEFT
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                task.title,
-                style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  decoration:
-                      isDone ? TextDecoration.lineThrough : null,
-                  color: isDone ? Colors.grey : Colors.black,
-                ),
-              ),
-              Text(
-                "${task.residentName} (${task.residentRoom}) • ${_statusText(task.status)}",
-                style: TextStyle(
-                  color: task.status == "progress"
-                      ? Colors.blue
-                      : Colors.grey,
-                ),
-              ),
-            ],
-          ),
-
-          // RIGHT BUTTON
-          GestureDetector(
-            onTap: () => toggleTask(index),
-            child: Container(
-              width: 36,
-              height: 36,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: isDone ? Colors.green : Colors.transparent,
-                border: Border.all(color: Colors.grey),
-              ),
-              child: isDone
-                  ? const Icon(Icons.check, color: Colors.white)
-                  : null,
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: color,
+              letterSpacing: -0.5,
             ),
-          )
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF64748B),
+              letterSpacing: 1.0,
+            ),
+          ),
         ],
       ),
     );
   }
 
-  String _statusText(String status) {
-    switch (status) {
-      case "done":
-        return "Completed";
-      case "progress":
-        return "In Progress";
-      default:
-        return "Upcoming";
-    }
+  Widget _divider() {
+    return Container(width: 1, height: 35, color: const Color(0xFFF1F5F9));
   }
+
+  // 💎 PREMIUM TASK CARD
+  Widget _taskCard(int index) {
+    final task = tasks[index];
+    bool isDone = task.status == "done";
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF1E293B).withOpacity(isDone ? 0.01 : 0.03),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          )
+        ],
+        border: Border.all(
+          color: isDone ? const Color(0xFFF1F5F9) : (task.status == "progress" ? const Color(0xFF2563EB).withOpacity(0.1) : Colors.transparent),
+          width: 1.5,
+        ),
+      ),
+      child: Row(
+        children: [
+          // CUSTOM PREMIUM CHECKBOX
+          GestureDetector(
+            onTap: () => toggleTask(index),
+            child: Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isDone 
+                  ? const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)])
+                  : null,
+                color: isDone ? null : Colors.white,
+                border: Border.all(
+                  color: isDone ? Colors.transparent : Colors.grey.shade300,
+                  width: 2,
+                ),
+                boxShadow: isDone ? [
+                  BoxShadow(color: const Color(0xFF10B981).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 4))
+                ] : [],
+              ),
+              child: isDone ? const Icon(Icons.check_rounded, color: Colors.white, size: 18) : null,
+            ),
+          ),
+
+          const SizedBox(width: 16),
+
+          // CONTENT
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  task.title,
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    decoration: isDone ? TextDecoration.lineThrough : null,
+                    color: isDone ? const Color(0xFF94A3B8) : const Color(0xFF1E293B),
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: isDone 
+                          ? const Color(0xFFDCFCE7).withOpacity(0.5) 
+                          : (task.status == "progress" ? const Color(0xFFEFF6FF) : const Color(0xFFF8FAFC)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.person_outline_rounded, size: 12, color: isDone ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+                          const SizedBox(width: 4),
+                          Text(
+                            task.residentName,
+                            style: TextStyle(
+                              color: isDone ? const Color(0xFF94A3B8) : const Color(0xFF64748B),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    // STATUS BADGE
+                    Text(
+                      isDone ? "Done" : (task.status == "progress" ? "Working..." : "Upcoming"),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: isDone 
+                          ? const Color(0xFF10B981) 
+                          : (task.status == "progress" ? const Color(0xFF2563EB) : const Color(0xFF94A3B8)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }

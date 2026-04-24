@@ -62,9 +62,9 @@ class _EditStaffScreenState extends State<EditStaffScreen> {
       setState(() => _isSaving = true);
       
       try {
-        final userId = widget.staffData['user']?['_id'] ?? widget.staffData['user']?['id'] ?? widget.staffData['_id'];
+        final userId = widget.staffData['userId'] ?? widget.staffData['user']?['_id'] ?? widget.staffData['_id'];
         
-        // This simulates a PUT request to update staff details
+        // Use the robust user update endpoint
         final response = await ApiService.put('/users/$userId', {
           'name': _nameController.text.trim(),
           'email': _emailController.text.trim(),
@@ -80,13 +80,21 @@ class _EditStaffScreenState extends State<EditStaffScreen> {
             }
 
             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Staff details updated successfully!"), backgroundColor: Colors.green),
+                const SnackBar(
+                  content: Text("Staff details updated successfully!"), 
+                  backgroundColor: Colors.green,
+                  behavior: SnackBarBehavior.floating,
+                ),
             );
             Navigator.pop(context, true);
         } else {
             final data = jsonDecode(response.body);
             ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(data['message'] ?? "Error updating staff")),
+                SnackBar(
+                  content: Text(data['message'] ?? "Error updating staff"),
+                  backgroundColor: Colors.redAccent,
+                  behavior: SnackBarBehavior.floating,
+                ),
             );
         }
       } catch (e) {

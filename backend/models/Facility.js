@@ -6,6 +6,9 @@ const FacilitySchema = new mongoose.Schema({
     required: true
   },
   address: String,
+  branchName: String,
+  officeAddress: String,
+  workingHours: String,
   branches: [String],
   permissions: {
     type: Map,

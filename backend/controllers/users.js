@@ -71,3 +71,52 @@ exports.getUsers = async (req, res, next) => {
     next(err);
   }
 };
+
+// @desc    Update user (Admin only)
+// @route   PUT /api/v1/users/:id
+// @access  Private (Admin)
+exports.updateUser = async (req, res, next) => {
+  try {
+    const user = await User.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// @desc    Delete user (Admin only)
+// @route   DELETE /api/v1/users/:id
+// @access  Private (Admin)
+exports.deleteUser = async (req, res, next) => {
+  try {
+    // 🛡️ SAFETY CHECK: Prevent self-deletion
+    if (req.params.id === req.user.id) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Security Violation: You cannot delete your own administrative account while logged in.' 
+      });
+    }
+
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Also delete any associated staff record if exists (Safe cleanup)
+    const Staff = require('../models/Staff');
+    await Staff.findOneAndDelete({ user: req.params.id });
+
+    res.status(200).json({ success: true, data: {} });
+  } catch (err) {
+    next(err);
+  }
+};

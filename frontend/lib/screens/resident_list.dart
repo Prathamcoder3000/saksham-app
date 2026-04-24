@@ -11,7 +11,8 @@ import 'manage_staff.dart';
 import 'reports_screen.dart';
 
 class ResidentListScreen extends StatefulWidget {
-  const ResidentListScreen({super.key});
+  final bool isTab;
+  const ResidentListScreen({super.key, this.isTab = false});
 
   @override
   State<ResidentListScreen> createState() => _ResidentListScreenState();
@@ -109,10 +110,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFE),
-
-      body: Stack(
+    Widget mainBody = Stack(
         children: [
 
           // 🔝 GLASS APP BAR
@@ -125,16 +123,26 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
                 color: Colors.white.withOpacity(0.7),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: const [
-                    Text(
-                      "Residents",
-                      style: TextStyle(
-                        color: Color(0xFF2563EB),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                      ),
+                  children: [
+                    Row(
+                      children: [
+                        if (!widget.isTab)
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: const Icon(Icons.arrow_back, color: Color(0xFF2563EB)),
+                        ),
+                        if (!widget.isTab) const SizedBox(width: 10),
+                        const Text(
+                          "Residents",
+                          style: TextStyle(
+                            color: Color(0xFF2563EB),
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
                     ),
-                    Icon(Icons.search, color: Color(0xFF2563EB)),
+                    const Icon(Icons.search, color: Color(0xFF2563EB)),
                   ],
                 ),
               ),
@@ -143,7 +151,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
 
           // 🔹 MAIN CONTENT
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 100, 16, 0),
+            padding: EdgeInsets.fromLTRB(16, 100, 16, widget.isTab ? 20 : 0),
             child: Column(
               children: [
 
@@ -218,6 +226,7 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
           ),
 
           // ➕ FAB (GRADIENT + SHADOW)
+          if (!widget.isTab)
           Positioned(
             bottom: 90,
             right: 20,
@@ -249,37 +258,14 @@ class _ResidentListScreenState extends State<ResidentListScreen> {
               ),
             ),
           ),
-
-          // 🔻 FLOATING NAV BAR
-          Positioned(
-            bottom: 10,
-            left: 16,
-            right: 16,
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.blue.withOpacity(0.1),
-                    blurRadius: 20,
-                  )
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  _navItemBtn(context, Icons.dashboard, "Dashboard", false),
-                  _navItemBtn(context, Icons.group, "Staff", false),
-                  _navItemBtn(context, Icons.people, "Residents", true),
-                  _navItemBtn(context, Icons.analytics, "Reports", false),
-                ],
-              ),
-            ),
-          ),
         ],
-      ),
+      );
+
+    if (widget.isTab) return mainBody;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6FAFE),
+      body: mainBody,
     );
   }
 
@@ -442,39 +428,4 @@ class ResidentCard extends StatelessWidget {
   ),
 );
   }
-}
-
-Widget _navItemBtn(BuildContext context, IconData icon, String label, bool active) {
-  return GestureDetector(
-    onTap: () {
-      if (active) return;
-      
-      if (label == "Dashboard") {
-        Navigator.popUntil(context, (route) => route.isFirst);
-      } else if (label == "Staff") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ManageStaffScreen()));
-      } else if (label == "Residents") {
-        // Already here
-      } else if (label == "Reports") {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const ReportsScreen()));
-      }
-    },
-    child: Container(
-      color: Colors.transparent,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      child: Column(
-        children: [
-          Icon(icon, color: active ? const Color(0xFF2563EB) : Colors.grey),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              color: active ? const Color(0xFF2563EB) : Colors.grey,
-            ),
-          )
-        ],
-      ),
-    ),
-  );
 }

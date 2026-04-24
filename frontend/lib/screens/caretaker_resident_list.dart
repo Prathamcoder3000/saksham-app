@@ -7,7 +7,8 @@ import 'caretaker_add_resident.dart';
 import 'caretaker_dashboard.dart';
 
 class CaretakerResidentListScreen extends StatefulWidget {
-  const CaretakerResidentListScreen({super.key});
+  final bool isTab;
+  const CaretakerResidentListScreen({super.key, this.isTab = false});
 
   @override
   State<CaretakerResidentListScreen> createState() =>
@@ -34,47 +35,31 @@ class _CaretakerResidentListScreenState
       final response = await ApiService.get('/residents');
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body)['data'];
-        setState(() {
-          residents = data;
-          filteredResidents = residents;
-          _isLoading = false;
-        });
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load residents')));
+        if (mounted) {
+          setState(() {
+            residents = data;
+            filteredResidents = data;
+            _isLoading = false;
+          });
+        }
       }
     } catch (e) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Check connection.')));
-      }
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  void _runFilter(String enteredKeyword) {
-    List<dynamic> results = [];
-    if (enteredKeyword.isEmpty) {
-      results = residents;
-    } else {
-      results = residents
-          .where((user) =>
-              user["name"].toLowerCase().contains(enteredKeyword.toLowerCase()))
-          .toList();
-    }
-
+  void _onSearch(String query) {
     setState(() {
-      filteredResidents = results;
+      filteredResidents = residents
+          .where((r) => r['name'].toString().toLowerCase().contains(query.toLowerCase()))
+          .toList();
     });
   }
 
   void _applyStatusFilter(String status) {
     setState(() {
       selectedFilter = status;
-      if (status == 'all') {
+      if (status == "all") {
         filteredResidents = residents;
       } else {
         filteredResidents = residents.where((r) => r['status'].toString().toLowerCase() == status.toLowerCase()).toList();
@@ -84,267 +69,270 @@ class _CaretakerResidentListScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF6FAFE),
-
-      body: SafeArea(
-        child: Column(
-          children: [
-
-            // 🔝 HEADER
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
+    Widget body = SafeArea(
+      child: Column(
+        children: [
+          // 🔝 HEADER
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                if (!widget.isTab) ...[
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
-                    child: const Icon(Icons.arrow_back, color: Colors.blue),
-                  ),
-                  const SizedBox(width: 10),
-                  const Text("Residents",
-                          style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 18,
-                              color: Colors.blue)),
-                ],
-              ),
-            ),
-
-            // 🔍 SEARCH BAR
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(30),
-                ),
-                child: TextField(
-                  controller: _searchController,
-                  onChanged: (value) => _runFilter(value),
-                  decoration: const InputDecoration(
-                    icon: Icon(Icons.search),
-                    hintText: "Search residents...",
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 15),
-
-            // 🔘 FILTER CHIPS
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _chip("all", "All"),
-                _chip("stable", "Stable"),
-                _chip("critical", "Critical"),
-                _chip("monitoring", "Monitoring"),
-              ],
-            ),
-
-            const SizedBox(height: 15),
-
-            Expanded(
-              child: _isLoading 
-                ? const Center(child: CircularProgressIndicator())
-                : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: filteredResidents.length,
-                itemBuilder: (context, index) {
-
-                  final r = filteredResidents[index];
-
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => CaretakerResidentProfileScreen(data: {
-                            "id": r["_id"] ?? "",
-                            "name": r["name"] ?? "Unknown",
-                            "room": r["room"] ?? "N/A",
-                            "status": r["status"] ?? "stable",
-                            "age": (r["age"] ?? "").toString(),
-                            "conditions": (r["conditions"] as List?)?.join(", ") ?? "",
-                            "allergies": (r["allergies"] as List?)?.join(", ") ?? "",
-                            "emergencyContactName": r["emergencyContactName"] ?? "",
-                            "emergencyContactPhone": r["emergencyContactPhone"] ?? "",
-                          }),
-                        ),
-                      );
-                    },
                     child: Container(
-                      margin: const EdgeInsets.only(bottom: 14),
-                      padding: const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(10),
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(12),
                         boxShadow: [
-                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)
-                        ]
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.04),
+                            blurRadius: 10,
+                          )
+                        ],
                       ),
-                      child: Row(
-                        children: [
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.blue, size: 18),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                ],
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Our Residents",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: Color(0xFF1E293B),
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+                      Text(
+                        "Keep track of everyone in your care",
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF94A3B8),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () async {
+                    final newResident = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const CaretakerAddResidentScreen(),
+                      ),
+                    );
 
-                          // 👤 AVATAR
-                          CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.blue.withOpacity(0.1),
-                            child: const Icon(Icons.person, color: Colors.blue),
+                    if (newResident != null) {
+                      _fetchResidents();
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.blue,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.blue.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ],
+                    ),
+                    child: const Icon(Icons.add_rounded, color: Colors.white, size: 24),
+                  ),
+                )
+              ],
+            ),
+          ),
+
+          // 🔍 SEARCH BAR
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 2),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.03),
+                    blurRadius: 15,
+                    offset: const Offset(0, 5),
+                  )
+                ],
+              ),
+              child: TextField(
+                controller: _searchController,
+                onChanged: _onSearch,
+                decoration: const InputDecoration(
+                  icon: Icon(Icons.search_rounded, color: Colors.blue, size: 22),
+                  hintText: "Search residents...",
+                  hintStyle: TextStyle(color: Color(0xFF94A3B8), fontSize: 14),
+                  border: InputBorder.none,
+                ),
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 20),
+
+          // 🏷️ FILTERS
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                _chip("all", "All"),
+                const SizedBox(width: 10),
+                _chip("stable", "Stable"),
+                const SizedBox(width: 10),
+                _chip("monitoring", "Monitoring"),
+                const SizedBox(width: 10),
+                _chip("critical", "Critical"),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // 📋 LIST
+          Expanded(
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    itemCount: filteredResidents.length,
+                    itemBuilder: (context, index) {
+                      final r = filteredResidents[index];
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => CaretakerResidentProfileScreen(data: {
+                                "id": r["_id"].toString(),
+                                "name": r["name"].toString(),
+                                "room": r["room"].toString(),
+                                "age": r["age"].toString(),
+                                "condition": r["condition"].toString(),
+                                "status": r["status"].toString(),
+                                "emergencyContactName": r["emergencyContactName"] ?? "",
+                                "emergencyContactPhone": r["emergencyContactPhone"] ?? "",
+                              }),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 16),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.03),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              )
+                            ],
+                            border: Border.all(color: Colors.black.withOpacity(0.01)),
                           ),
-
-                          const SizedBox(width: 14),
-
-                          // DETAILS
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-
-                                Text(
-                                  r["name"] ?? "Unknown",
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
+                          child: Row(
+                            children: [
+                              // 👤 AVATAR
+                              Container(
+                                width: 55,
+                                height: 55,
+                                decoration: BoxDecoration(
+                                  color: Colors.blue.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
+                                child: const Center(
+                                  child: Icon(Icons.person_rounded, color: Colors.blue, size: 30),
+                                ),
+                              ),
 
-                                const SizedBox(height: 6),
+                              const SizedBox(width: 16),
 
-                                Row(
+                              // DETAILS
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Icon(Icons.circle,
-                                        size: 10,
-                                        color: _statusColor(r["status"].toString().toLowerCase())),
-                                    const SizedBox(width: 6),
-                                    Flexible(
-                                      child: Text(
-                                        r["room"] ?? "No Room",
-                                        style: const TextStyle(color: Colors.grey),
-                                        overflow: TextOverflow.ellipsis,
+                                    Text(
+                                      r["name"].toString(),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        color: Color(0xFF1E293B),
                                       ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.meeting_room_rounded, size: 14, color: Color(0xFF94A3B8)),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          "Room ${r["room"]}",
+                                          style: const TextStyle(
+                                            color: Color(0xFF64748B),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ],
                                 ),
-                              ],
-                            ),
-                          ),
-
-                          // STATUS BADGE
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 7, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _statusColor(r["status"].toString().toLowerCase())
-                                  .withOpacity(0.15),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              (r["status"] ?? "stable").toString().toUpperCase(),
-                              style: TextStyle(
-                                fontSize: 9,
-                                color: _statusColor(r["status"].toString().toLowerCase()),
-                                fontWeight: FontWeight.bold,
                               ),
-                            ),
+
+                              // STATUS BADGE
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: _statusColor(r["status"].toString().toLowerCase()).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      r["status"].toString().toUpperCase(),
+                                      style: TextStyle(
+                                        color: _statusColor(r["status"].toString().toLowerCase()),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 10,
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  const Icon(Icons.arrow_forward_ios_rounded, color: Color(0xFFCBD5E1), size: 14),
+                                ],
+                              ),
+                            ],
                           ),
-
-                          const SizedBox(width: 4),
-
-                          const Icon(Icons.chevron_right,
-                              color: Colors.grey),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
-      ),
-
-      // ➕ FAB
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.blue,
-        onPressed: () async {
-          final newResident = await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => const CaretakerAddResidentScreen(),
-            ),
-          );
-
-          if (newResident != null) {
-            setState(() {
-              residents.add(newResident);
-            });
-          }
-        },
-        child: const Icon(Icons.add),
-      ),
-
-      bottomNavigationBar: Container(
-        height: 80,
-        padding: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.07),
-              blurRadius: 20,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navBtn(Icons.home, "Home", false),
-            _navBtn(Icons.monitor_heart, "Vitals", false),
-            _navBtn(Icons.handshake, "Care", true),
-            _navBtn(Icons.person, "Profile", false),
-          ],
-        ),
+                        ),
+                      );
+                    },
+                  ),
+          ),
+        ],
       ),
     );
-  }
 
-  Widget _navBtn(IconData icon, String label, bool active) {
-    return GestureDetector(
-      onTap: () {
-        if (active) return;
-        
-        if (label == "Home") {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 0)), (r) => false);
-        } else if (label == "Vitals") {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 1)), (r) => false);
-        } else if (label == "Care") {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 2)), (r) => false);
-        } else if (label == "Profile") {
-          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const CaretakerDashboard(initialIndex: 3)), (r) => false);
-        }
-      },
-      child: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, color: active ? const Color(0xFF004AC6) : Colors.grey),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: active ? const Color(0xFF004AC6) : Colors.grey,
-              ),
-            ),
-          ],
-        ),
-      ),
+    if (widget.isTab) return body;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6FAFE),
+      body: body,
     );
   }
 
@@ -354,17 +342,21 @@ class _CaretakerResidentListScreenState
 
     return GestureDetector(
       onTap: () => _applyStatusFilter(value),
-      child: Container(
-        padding:
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? Colors.blue : Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(20),
+          color: selected ? Colors.blue : Colors.blue.withOpacity(0.06),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: selected ? Colors.blue : Colors.blue.withOpacity(0.1)),
         ),
         child: Text(
           label,
           style: TextStyle(
-              color: selected ? Colors.white : Colors.black),
+            color: selected ? Colors.white : Colors.blue,
+            fontWeight: selected ? FontWeight.bold : FontWeight.w600,
+            fontSize: 13,
+          ),
         ),
       ),
     );

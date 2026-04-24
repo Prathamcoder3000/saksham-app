@@ -4,15 +4,22 @@ import 'dart:convert';
 import 'package:intl/intl.dart';
 
 class FamilyCalendarScreen extends StatefulWidget {
-  const FamilyCalendarScreen({super.key});
+  final VoidCallback? onBack;
+  const FamilyCalendarScreen({super.key, this.onBack});
 
   @override
   State<FamilyCalendarScreen> createState() => _FamilyCalendarScreenState();
 }
 
 class _FamilyCalendarScreenState extends State<FamilyCalendarScreen> {
+  static const primary = Color(0xFF4E59A8);
+  static const accent = Color(0xFF9FA8DA);
+  static const textDark = Color(0xFF1E293B);
+  static const textLight = Color(0xFF64748B);
+
   bool _isLoading = true;
   List<dynamic> _appointments = [];
+  int _selectedDayIndex = 0;
 
   @override
   void initState() {
@@ -29,187 +36,232 @@ class _FamilyCalendarScreenState extends State<FamilyCalendarScreen> {
             _appointments = jsonDecode(res.body)['data'];
           });
         }
-      } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load appointments.')));
       }
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network Error. Could not load calendar.')));
-    } finally {
+    } catch (e) {} finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.only(top: 90, left: 16, right: 16, bottom: 120),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            "Schedule & Events",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              fontFamily: "Lexend",
-            ),
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            "Upcoming care routines and appointments",
-            style: TextStyle(color: Colors.grey, fontFamily: "Lexend"),
-          ),
-          const SizedBox(height: 24),
-
-          // Date Selector
-          Row(
-            children: List.generate(4, (index) {
-              final date = DateTime.now().add(Duration(days: index));
-              final dayStr = DateFormat('EEE').format(date);
-              final dateStr = DateFormat('dd').format(date);
-              return _dateCard(dayStr, dateStr, index == 0);
-            }),
-          ),
-          const SizedBox(height: 30),
-
-          // Events
-          Text(
-            DateFormat('EEEE, MMM dd').format(DateTime.now()),
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: "Lexend"),
-          ),
-          const SizedBox(height: 16),
-
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator())
-          else if (_appointments.isEmpty)
-             Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: const Center(child: Text("No upcoming appointments scheduled yet.")),
-            ),
-          
-          if (!_isLoading && _appointments.isNotEmpty)
-            ..._appointments.map((app) {
-              DateTime d = DateTime.now();
-              if (app['date'] != null) {
-                  d = DateTime.parse(app['date']);
-              }
-              final timeStr = DateFormat('hh:mm a').format(d);
-              return Column(
-                children: [
-                  _eventItem(
-                    time: timeStr,
-                    title: app['title'] ?? 'Appointment',
-                    subtitle: app['status'] ?? 'Scheduled',
-                    color: Colors.teal,
-                    icon: Icons.medical_services,
+    return Scaffold(
+      backgroundColor: const Color(0xFFF3F4F9),
+      body: _isLoading 
+        ? const Center(child: CircularProgressIndicator(color: primary, strokeWidth: 2))
+        : CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              _buildSliverAppBar(),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 12),
+                      _buildDateSelector(),
+                      const SizedBox(height: 40),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            DateFormat('EEEE, MMM dd').format(DateTime.now().add(Duration(days: _selectedDayIndex))),
+                            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark, fontFamily: "Lexend", letterSpacing: -0.5),
+                          ),
+                          const Icon(Icons.calendar_today_rounded, color: textLight, size: 20),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      if (_appointments.isEmpty)
+                        _buildEmptyState()
+                      else
+                        ..._appointments.map((app) {
+                          DateTime d = DateTime.now();
+                          if (app['date'] != null) d = DateTime.parse(app['date']);
+                          final timeStr = DateFormat('hh:mm a').format(d);
+                          return _buildEventItem(
+                            time: timeStr,
+                            title: app['title'] ?? 'Care Session',
+                            type: app['type'] ?? 'General Care',
+                            status: app['status'] ?? 'Scheduled',
+                            color: _getEventColor(app['type'] ?? 'Medical'),
+                          );
+                        }).toList(),
+                      const SizedBox(height: 120),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                ]
-              );
-            }).toList(),
-        ],
+                ),
+              ),
+            ],
+          ),
+    );
+  }
+
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 0,
+      floating: true,
+      backgroundColor: const Color(0xFFF3F4F9),
+      elevation: 0,
+      automaticallyImplyLeading: false,
+      leading: IconButton(
+        icon: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          child: const Icon(Icons.arrow_back_ios_new_rounded, color: textDark, size: 16),
+        ),
+        onPressed: widget.onBack,
+      ),
+      title: const Text(
+        "Care Planner",
+        style: TextStyle(color: textDark, fontWeight: FontWeight.w800, fontSize: 18, fontFamily: "Lexend"),
       ),
     );
   }
 
-  Widget _dateCard(String day, String date, bool isActive) {
-    return Expanded(
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
-        padding: const EdgeInsets.symmetric(vertical: 16),
-        decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF2563EB) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Column(
-          children: [
-            Text(
-              day,
-              style: TextStyle(
-                color: isActive ? Colors.white70 : Colors.grey,
-                fontFamily: "Lexend",
+  Widget _buildDateSelector() {
+    return Row(
+      children: List.generate(5, (index) {
+        final date = DateTime.now().add(Duration(days: index));
+        final dayStr = DateFormat('EEE').format(date);
+        final dateStr = DateFormat('dd').format(date);
+        final isActive = _selectedDayIndex == index;
+
+        return Expanded(
+          child: GestureDetector(
+            onTap: () => setState(() => _selectedDayIndex = index),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 5),
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              decoration: BoxDecoration(
+                color: isActive ? primary : Colors.white,
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: isActive 
+                  ? [BoxShadow(color: primary.withOpacity(0.2), blurRadius: 15, offset: const Offset(0, 8))]
+                  : [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 10, offset: const Offset(0, 4))],
+              ),
+              child: Column(
+                children: [
+                  Text(
+                    dayStr,
+                    style: TextStyle(
+                      color: isActive ? Colors.white70 : textLight,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      fontFamily: "Lexend",
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    dateStr,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: isActive ? Colors.white : textDark,
+                      fontFamily: "Lexend",
+                    ),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              date,
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: isActive ? Colors.white : Colors.black87,
-                fontFamily: "Lexend",
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      }),
     );
   }
 
-  Widget _eventItem({
+  Widget _buildEventItem({
     required String time,
     required String title,
-    required String subtitle,
+    required String type,
+    required String status,
     required Color color,
-    required IconData icon,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 20, offset: const Offset(0, 8)),
+        ],
       ),
       child: Row(
         children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(18)),
+            child: Column(
+              children: [
+                Text(time.split(" ")[0], style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15, color: textDark)),
+                Text(time.split(" ")[1], style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w800, color: textLight)),
+              ],
+            ),
+          ),
+          const SizedBox(width: 22),
           Expanded(
-            flex: 2,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  time.split(" ")[0],
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: "Lexend"),
-                ),
-                Text(
-                  time.split(" ").length > 1 ? time.split(" ")[1] : "",
-                  style: const TextStyle(color: Colors.grey, fontSize: 12, fontFamily: "Lexend"),
+                Text(title, style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 16, color: textDark, fontFamily: "Lexend")),
+                const SizedBox(height: 6),
+                Row(
+                  children: [
+                    Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+                    const SizedBox(width: 8),
+                    Text(type, style: const TextStyle(color: textLight, fontSize: 13, fontWeight: FontWeight.w600)),
+                  ],
                 ),
               ],
             ),
           ),
           Container(
-            width: 4,
-            height: 40,
-            decoration: BoxDecoration(
-              color: color,
-              borderRadius: BorderRadius.circular(4),
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(10)),
+            child: Text(status.toUpperCase(), style: TextStyle(color: color, fontSize: 9, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
           ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 6,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: "Lexend"),
-                ),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.grey, fontSize: 13, fontFamily: "Lexend"),
-                ),
-              ],
-            ),
-          ),
-          Icon(icon, color: color),
         ],
       ),
     );
   }
-}
 
+  Widget _buildEmptyState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 60, horizontal: 30),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(35),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.01), blurRadius: 20)],
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(color: const Color(0xFFF8FAFC), shape: BoxShape.circle),
+            child: Icon(Icons.spa_rounded, size: 48, color: primary.withOpacity(0.2)),
+          ),
+          const SizedBox(height: 28),
+          const Text("A Peaceful Day", style: TextStyle(fontWeight: FontWeight.w900, fontSize: 20, color: textDark, fontFamily: "Lexend")),
+          const SizedBox(height: 10),
+          const Text(
+            "No special appointments or visits scheduled for today. Your loved one is following their regular wellness routine.",
+            textAlign: TextAlign.center,
+            style: TextStyle(color: textLight, fontSize: 14, height: 1.6, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Color _getEventColor(String type) {
+    switch (type.toLowerCase()) {
+      case 'medical': return Colors.blueAccent;
+      case 'therapy': return Colors.purpleAccent;
+      case 'visit': return Colors.orangeAccent;
+      default: return Colors.teal;
+    }
+  }
+}

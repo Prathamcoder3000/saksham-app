@@ -16,11 +16,16 @@ class FamilyDashboard extends StatefulWidget {
   State<FamilyDashboard> createState() => _FamilyDashboardState();
 }
 
+
 class _FamilyDashboardState extends State<FamilyDashboard> {
-  static const primary = Color(0xFF004AC6);
-  static const primaryContainer = Color(0xFF2563EB);
-  static const secondary = Color(0xFF006B5F);
-  static const bg = Color(0xFFF6FAFE);
+  // UNIQUE FAMILY IDENTITY COLORS
+  static const primary = Color(0xFF4E59A8); // Softer Indigo
+  static const accent = Color(0xFF9FA8DA);  // Lavender
+  static const wellness = Color(0xFF66BB6A); // Soft Green
+  static const bg = Color(0xFFF3F4F9);     // Warm Grey/Blue BG
+  static const surface = Colors.white;
+  static const textDark = Color(0xFF1E293B);
+  static const textLight = Color(0xFF64748B);
 
   int _currentIndex = 0;
   bool _isLoading = true;
@@ -43,31 +48,29 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
       if (res.statusCode == 200) {
         final List<dynamic> data = jsonDecode(res.body)['data'];
         if (data.isNotEmpty) {
-           _resident = ResidentModel.fromJson(data[0]);
-           
-           // Fetch meds status safely
-           try {
-             final medRes = await ApiService.get('/medicines/today?residentId=${_resident!.id}');
-             if (medRes.statusCode == 200) {
-                 final List<dynamic> meds = jsonDecode(medRes.body)['data'];
-                 _totalMeds = meds.length;
-                 _completedMeds = meds.where((m) => m['currentStatus'] == 'taken').length;
-             }
-           } catch (_) {}
+          _resident = ResidentModel.fromJson(data[0]);
 
-           // Fetch real logs safely
-           try {
-             final logsRes = await ApiService.get('/care-logs?residentId=${_resident!.id}');
-             if (logsRes.statusCode == 200) {
-                 _recentLogs = jsonDecode(logsRes.body)['data'];
-             }
-           } catch (_) {}
+          // Fetch meds status safely
+          try {
+            final medRes = await ApiService.get('/medicines/today?residentId=${_resident!.id}');
+            if (medRes.statusCode == 200) {
+              final List<dynamic> meds = jsonDecode(medRes.body)['data'];
+              _totalMeds = meds.length;
+              _completedMeds = meds.where((m) => m['currentStatus'] == 'taken').length;
+            }
+          } catch (_) {}
+
+          // Fetch real logs safely
+          try {
+            final logsRes = await ApiService.get('/care-logs?residentId=${_resident!.id}');
+            if (logsRes.statusCode == 200) {
+              _recentLogs = jsonDecode(logsRes.body)['data'];
+            }
+          } catch (_) {}
         }
-      } else {
-        if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Failed to load resident data.')));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Network error. Check connection.')));
+      // Handle error quietly
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -77,500 +80,409 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: bg,
-      body: Stack(
-        children: [
-          // 🔻 DYNAMIC CONTENT BASED ON NAV
-          _isLoading 
-            ? const Center(child: CircularProgressIndicator())
-            : IndexedStack(
-                index: _currentIndex,
-                children: [
-                   _resident == null 
-                     ? const Center(child: Text("No linked resident found."))
-                     : _buildHomeTab(),
-                  FamilyVitalsScreen(resident: _resident),
-                  const FamilyCalendarScreen(),
-                  const FamilySettingsScreen(),
-                ],
-              ),
-          _topBar(),
-        ],
-      ),
-      bottomNavigationBar: Container(
-        height: 90,
-        padding: const EdgeInsets.only(bottom: 20),
-        decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
-          boxShadow: [
-            BoxShadow(
-              color: const Color.fromRGBO(0, 74, 198, 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: primary, strokeWidth: 2))
+          : IndexedStack(
+              index: _currentIndex,
+              children: [
+                _resident == null ? _buildNoResidentState() : _buildHomeTab(),
+                FamilyVitalsScreen(
+                  resident: _resident,
+                  onBack: () => setState(() => _currentIndex = 0),
+                ),
+                FamilyCalendarScreen(
+                  onBack: () => setState(() => _currentIndex = 0),
+                ),
+                FamilySettingsScreen(residentName: _resident?.name),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            _navItem(Icons.home, "Home", 0),
-            _navItem(Icons.favorite, "Vitals", 1),
-            _navItem(Icons.event_note, "Calendar", 2),
-            _navItem(Icons.settings, "Settings", 3),
-          ],
-        ),
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // 🏠 HOME TAB (Original Main Content)
-  Widget _buildHomeTab() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 90, 16, 120),
+  // 🏗️ NO RESIDENT EMPTY STATE
+  Widget _buildNoResidentState() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _heroCard(),
-          const SizedBox(height: 24),
-
-          // HEADER
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text("Health Snapshot",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Lexend")),
-              Text("Last updated 10m ago",
-                  style: TextStyle(color: primary, fontFamily: "Lexend")),
-            ],
+          Container(
+            padding: const EdgeInsets.all(40),
+            decoration: BoxDecoration(
+              color: primary.withOpacity(0.04),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.favorite_rounded, size: 80, color: primary.withOpacity(0.2)),
           ),
-          const SizedBox(height: 16),
-
-          // GRID
-          Row(
-            children: [
-              Expanded(child: _heartCard()),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  children: [
-                    _miniCard(Icons.bedtime, "Sleep", "7h 45m"),
-                    const SizedBox(height: 12),
-                    _miniCard(Icons.directions_walk, "Activity", "2,410 steps"),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-
-          _medicationCard(),
-          const SizedBox(height: 20),
-
-          // TIMELINE HEADER
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: const [
-              Text("Recent Moments",
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Lexend")),
-              Text("View Timeline",
-                  style: TextStyle(color: primary, fontFamily: "Lexend")),
-            ],
-          ),
-          const SizedBox(height: 12),
-
-          _timeline(),
-          const SizedBox(height: 20),
-
-          _caretakerCard(),
-        ],
-      ),
-    );
-  }
-
-  // 🔝 TOP BAR
-  Widget _topBar() {
-    return Container(
-      height: 70,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.85),
-        boxShadow: [
-          BoxShadow(
-            color: primary.withOpacity(0.06),
-            blurRadius: 20,
-          )
-        ],
-      ),
-      child: Row(
-        children: const [
-          Text(
-            "Saksham",
-            style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: primary,
-                fontFamily: "Lexend"),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // 🔥 HERO
-  Widget _heroCard() {
-    return Container(
-      height: 190,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
-        image: const DecorationImage(
-          image: NetworkImage(
-              "https://images.unsplash.com/photo-1501785888041-af3ef285b470"),
-          fit: BoxFit.cover,
-        ),
-      ),
-      child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(28),
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue.withOpacity(0.85),
-              Colors.blue.withOpacity(0.95),
-            ],
-          ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.white24,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(radius: 4, backgroundColor: Colors.green),
-                      SizedBox(width: 6),
-                      Text("ACTIVE NOW",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontFamily: "Lexend")),
-                    ],
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Row(
-                children: [
-                  Container(
-                    width: 55,
-                    height: 55,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        "https://i.pravatar.cc/150",
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        _resident!.name.replaceAll(' ', '\n'),
-                        style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: "Lexend"),
-                      ),
-                      Text(
-                        "Room ${_resident!.room}",
-                        style: const TextStyle(
-                            color: Colors.white70,
-                            fontFamily: "Lexend"),
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  // ❤️ HEART
-  Widget _heartCard() {
-    return Container(
-      height: 160,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F7),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Icon(Icons.favorite, color: Colors.red),
-          const SizedBox(height: 10),
+          const SizedBox(height: 32),
           const Text(
-            "Heart Rate",
-            style: TextStyle(fontSize: 13, fontFamily: "Lexend"),
-          ),
-          const Spacer(),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                "72",
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: "Lexend",
-                ),
-              ),
-              SizedBox(width: 4),
-              Text(
-                "bpm",
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.grey,
-                  fontFamily: "Lexend",
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 4),
-          const Row(
-            children: [
-              Icon(Icons.show_chart, size: 14, color: Color(0xFF006B5F)),
-              SizedBox(width: 4),
-              Text(
-                "Stable",
-                style: TextStyle(
-                  color: Color(0xFF006B5F),
-                  fontSize: 12,
-                  fontFamily: "Lexend",
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  // MINI CARDS
-  Widget _miniCard(IconData icon, String title, String value) {
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF2F4F7),
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: const Color(0xFF2563EB)),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontFamily: "Lexend",
-                ),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontFamily: "Lexend",
-                ),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-
-  // 💊 MEDICATION
-  Widget _medicationCard() {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: const Color(0xFFEAEFF2),
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Medication",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontFamily: "Lexend",
-                    ),
-                  ),
-                  Text(
-                    "Daily adherence goal",
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                      fontFamily: "Lexend",
-                    ),
-                  ),
-                  SizedBox(height: 10),
-                  Text(
-                    "$_completedMeds / $_totalMeds",
-                    style: const TextStyle(
-                      fontSize: 32,
-                      color: Color(0xFF2563EB),
-                      fontWeight: FontWeight.bold,
-                      fontFamily: "Lexend",
-                    ),
-                  ),
-                  Text(
-                    "doses completed",
-                    style: TextStyle(fontFamily: "Lexend"),
-                  ),
-                ],
-              ),
-              Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: CircularProgressIndicator(
-                      value: _totalMeds > 0 ? _completedMeds / _totalMeds : 0,
-                      strokeWidth: 8,
-                      backgroundColor: Colors.grey.shade300,
-                      color: const Color(0xFF2563EB),
-                    ),
-                  ),
-                  const Icon(Icons.medication, color: Color(0xFF2563EB)),
-                ],
-              )
-            ],
+            "Welcome to Saksham",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: textDark, fontFamily: "Lexend"),
           ),
           const SizedBox(height: 16),
-          Row(
-            children: [
-              _bar(true),
-              const SizedBox(width: 6),
-              _bar(true),
-              const SizedBox(width: 6),
-              _bar(true),
-              const SizedBox(width: 6),
-              _bar(false),
-            ],
-          )
+          const Text(
+            "We haven't connected your account to a loved one yet. Please contact the facility to start receiving updates.",
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 15, color: textLight, height: 1.6, fontFamily: "Lexend"),
+          ),
+          const SizedBox(height: 48),
+          _buildActionButton("Contact Support", Icons.support_agent_rounded, primary, () {}),
         ],
       ),
     );
   }
 
-  Widget _bar(bool active) {
-    return Expanded(
-      child: Container(
-        height: 6,
-        decoration: BoxDecoration(
-          color: active ? const Color(0xFF2563EB) : Colors.grey.shade300,
-          borderRadius: BorderRadius.circular(4),
-        ),
-      ),
-    );
-  }
-
-  // 🕒 TIMELINE
-  Widget _timeline() {
-    if (_recentLogs.isEmpty) {
-      return Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(22)),
-        child: const Center(child: Text("No recent moments logged yet.")),
-      );
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
-      ),
-      child: Column(
-        children: _recentLogs.map((log) {
-          final timeStr = log['timestamp'] != null 
-              ? log['timestamp'].toString().substring(11, 16) 
-              : '--:--';
-          
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Row(
+  // 🏠 HOME TAB
+  Widget _buildHomeTab() {
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(),
+      slivers: [
+        _buildSliverAppBar(),
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  children: [
-                    Container(
-                      width: 12,
-                      height: 12,
-                      decoration: BoxDecoration(
-                        color: log['type'] == 'medication' ? Colors.green : const Color(0xFF2563EB),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    Container(
-                      width: 2,
-                      height: 40,
-                      color: const Color(0xFFE5E7EB),
-                    ),
-                  ],
+                const SizedBox(height: 12),
+                _buildGreetingHeader(),
+                const SizedBox(height: 30),
+                _buildWellbeingHero(),
+                const SizedBox(height: 40),
+                
+                _buildSectionHeader("Today's Wellbeing", "Healthy & Stable"),
+                const SizedBox(height: 18),
+                _buildQuickVitalsGrid(),
+                
+                const SizedBox(height: 40),
+                _buildSectionHeader("Care Adherence", "View Details"),
+                const SizedBox(height: 18),
+                _buildMedicationProgressCard(),
+                
+                const SizedBox(height: 40),
+                _buildSectionHeader("Latest Moments", "View Timeline"),
+                const SizedBox(height: 18),
+                _buildTimeline(),
+                
+                const SizedBox(height: 40),
+                _buildPeaceOfMindCard(),
+                const SizedBox(height: 120), 
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSliverAppBar() {
+    return SliverAppBar(
+      expandedHeight: 0,
+      floating: true,
+      backgroundColor: bg,
+      elevation: 0,
+      automaticallyImplyLeading: false, // FIX: Prevent back button to Role Selection
+      centerTitle: false,
+      title: Text(
+        "Saksham Companion",
+        style: TextStyle(
+          color: primary.withOpacity(0.9),
+          fontWeight: FontWeight.w800,
+          fontSize: 18,
+          letterSpacing: -0.2,
+          fontFamily: "Lexend",
+        ),
+      ),
+      actions: [
+        IconButton(
+          onPressed: () {},
+          icon: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10)]),
+            child: const Icon(Icons.notifications_none_rounded, color: textDark, size: 20),
+          ),
+        ),
+        const SizedBox(width: 12),
+      ],
+    );
+  }
+
+  Widget _buildGreetingHeader() {
+    return Consumer<AuthProvider>(
+      builder: (context, auth, _) {
+        final name = auth.user?.name.split(" ")[0] ?? "Family";
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Welcome, $name",
+              style: const TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: textDark, fontFamily: "Lexend", letterSpacing: -0.5),
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                const Icon(Icons.verified_user_rounded, color: wellness, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  "Everything looks stable today",
+                  style: TextStyle(color: textLight, fontSize: 15, fontWeight: FontWeight.w500, fontFamily: "Lexend"),
                 ),
-                const SizedBox(width: 14),
+              ],
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  Widget _buildSectionHeader(String title, String subtitle) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(title, style: const TextStyle(fontSize: 19, fontWeight: FontWeight.bold, color: textDark, fontFamily: "Lexend")),
+        Text(subtitle, style: const TextStyle(fontSize: 13, color: primary, fontWeight: FontWeight.w700, fontFamily: "Lexend")),
+      ],
+    );
+  }
+
+  Widget _buildWellbeingHero() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: primary.withOpacity(0.03), blurRadius: 30, offset: const Offset(0, 15)),
+        ],
+      ),
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Hero(
+                  tag: 'resident_avatar',
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: primary.withOpacity(0.08), width: 4),
+                    ),
+                    child: CircleAvatar(
+                      radius: 42,
+                      backgroundImage: NetworkImage(_resident?.photoUrl ?? "https://i.pravatar.cc/150?u=${_resident?.id}"),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 22),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        timeStr,
-                        style: const TextStyle(fontSize: 12, color: Colors.grey, fontFamily: "Lexend"),
+                        _resident?.name ?? "Loved One",
+                        style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w900, color: textDark, fontFamily: "Lexend", letterSpacing: -1),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        log['title'] ?? "Care Activity",
-                        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, fontFamily: "Lexend"),
+                      const SizedBox(height: 6),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: wellness.withOpacity(0.12),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(width: 8, height: 8, decoration: const BoxDecoration(color: wellness, shape: BoxShape.circle)),
+                                const SizedBox(width: 8),
+                                const Text("STABLE", style: TextStyle(color: wellness, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Text("Room ${_resident?.room ?? '--'}", style: const TextStyle(color: textLight, fontSize: 14, fontWeight: FontWeight.w600)),
+                        ],
                       ),
-                      const SizedBox(height: 4),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: BoxDecoration(
+              color: primary.withOpacity(0.02),
+              borderRadius: const BorderRadius.vertical(bottom: Radius.circular(32)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 20),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    "Currently resting comfortably after lunch",
+                    style: TextStyle(color: textDark.withOpacity(0.8), fontSize: 14, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                Icon(Icons.arrow_forward_ios_rounded, color: textLight.withOpacity(0.5), size: 14),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildQuickVitalsGrid() {
+    return Row(
+      children: [
+        Expanded(child: _buildMiniVitalCard(Icons.favorite_rounded, "72", "bpm", "Heart", Colors.redAccent)),
+        const SizedBox(width: 14),
+        Expanded(child: _buildMiniVitalCard(Icons.air_rounded, "98", "%", "Oxygen", Colors.teal)),
+        const SizedBox(width: 14),
+        Expanded(child: _buildMiniVitalCard(Icons.thermostat_rounded, "36.5", "°C", "Temp", Colors.orangeAccent)),
+      ],
+    );
+  }
+
+  Widget _buildMiniVitalCard(IconData icon, String value, String unit, String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(color: color.withOpacity(0.04), blurRadius: 20, offset: const Offset(0, 5)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: color, size: 22),
+          const SizedBox(height: 16),
+          Text(value, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: textDark, letterSpacing: -0.5)),
+          Text(unit, style: const TextStyle(fontSize: 11, color: textLight, fontWeight: FontWeight.w800)),
+          const SizedBox(height: 4),
+          Text(label, style: const TextStyle(fontSize: 12, color: textLight, fontWeight: FontWeight.w600)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMedicationProgressCard() {
+    final progress = _totalMeds > 0 ? _completedMeds / _totalMeds : 0.0;
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [primary, primary.withOpacity(0.8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: primary.withOpacity(0.2), blurRadius: 25, offset: const Offset(0, 12)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text("Care Progress", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, fontFamily: "Lexend")),
+                  Text("Today's wellness adherence", style: TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w500)),
+                ],
+              ),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), shape: BoxShape.circle),
+                child: const Icon(Icons.medication_rounded, color: Colors.white, size: 24),
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          Row(
+            children: [
+              Text("${(progress * 100).toInt()}%", style: const TextStyle(color: Colors.white, fontSize: 40, fontWeight: FontWeight.w900, letterSpacing: -1.5)),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text("$_completedMeds of $_totalMeds requirements met", style: const TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w700)),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        backgroundColor: Colors.white.withOpacity(0.15),
+                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                        minHeight: 8,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimeline() {
+    if (_recentLogs.isEmpty) {
+      return Container(
+        height: 130,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(color: surface, borderRadius: BorderRadius.circular(32), border: Border.all(color: primary.withOpacity(0.02))),
+        child: const Text("No care updates right now", style: TextStyle(color: textLight, fontWeight: FontWeight.w600)),
+      );
+    }
+    return Container(
+      padding: const EdgeInsets.all(28),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: BorderRadius.circular(32),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.015), blurRadius: 30, offset: const Offset(0, 10)),
+        ],
+      ),
+      child: Column(
+        children: _recentLogs.take(2).map((log) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(color: primary.withOpacity(0.05), shape: BoxShape.circle),
+                  child: const Icon(Icons.history_toggle_off_rounded, color: primary, size: 18),
+                ),
+                const SizedBox(width: 18),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(log['title'] ?? "Care Activity", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: textDark)),
+                      const SizedBox(height: 5),
                       Text(
                         log['description'] ?? "",
-                        style: const TextStyle(fontSize: 13, color: Colors.black87, fontFamily: "Lexend"),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 14, color: textLight, height: 1.6, fontWeight: FontWeight.w400),
                       ),
                     ],
                   ),
@@ -583,99 +495,29 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
     );
   }
 
-  // 👩‍⚕️ CARETAKER
-  Widget _caretakerCard() {
-    final ctId = _resident?.assignedCaretaker;
-    final ctName = "Facility Staff"; // Since we only have the ID, use default name
-    
+  Widget _buildPeaceOfMindCard() {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF2563EB), Color(0xFF006B5F)],
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withOpacity(0.2),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          )
-        ],
+        color: textDark,
+        borderRadius: BorderRadius.circular(32),
       ),
       child: Row(
         children: [
           Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: Colors.orange, width: 3),
-            ),
-            child: ClipOval(
-              child: Image.network(
-                "https://i.pravatar.cc/150?u=${ctId ?? 'default'}",
-                fit: BoxFit.cover,
-              ),
-            ),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(color: Colors.white.withOpacity(0.1), shape: BoxShape.circle),
+            child: const Icon(Icons.security_rounded, color: accent, size: 28),
           ),
-          const SizedBox(width: 12),
-          Expanded(
+          const SizedBox(width: 22),
+          const Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  ctName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 15,
-                    fontFamily: "Lexend",
-                  ),
-                ),
-                const Text(
-                  "Assigned Caretaker",
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontSize: 12,
-                    fontFamily: "Lexend",
-                  ),
-                ),
+                Text("Peace of Mind", style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 18, fontFamily: "Lexend", letterSpacing: 0.2)),
+                SizedBox(height: 4),
+                Text("Your loved one is in professional care", style: TextStyle(color: Colors.white60, fontSize: 13, fontWeight: FontWeight.w500)),
               ],
-            ),
-          ),
-          Container(
-            width: 42,
-            height: 42,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(Icons.call, color: Color(0xFF2563EB)),
-          ),
-          const SizedBox(width: 10),
-          GestureDetector(
-            onTap: () {
-              if (ctId == null) return;
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ChatScreen(
-                    recipientId: ctId,
-                    recipientName: ctName,
-                    conversationId: "conv_${_resident!.id}_family", 
-                  ),
-                ),
-              );
-            },
-            child: Container(
-              width: 42,
-              height: 42,
-              decoration: const BoxDecoration(
-                color: Colors.white24,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.chat, color: Colors.white),
             ),
           ),
         ],
@@ -683,36 +525,64 @@ class _FamilyDashboardState extends State<FamilyDashboard> {
     );
   }
 
-  Widget _navItem(IconData icon, String label, int index) {
-    bool isActive = _currentIndex == index;
+  Widget _buildBottomNav() {
+    return Container(
+      height: 110,
+      padding: const EdgeInsets.only(bottom: 35, left: 24, right: 24),
+      decoration: BoxDecoration(
+        color: surface,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(45)),
+        boxShadow: [
+          BoxShadow(color: primary.withOpacity(0.08), blurRadius: 50, offset: const Offset(0, -15)),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildNavItem(0, Icons.home_rounded, "Home"),
+          _buildNavItem(1, Icons.favorite_rounded, "Health"),
+          _buildNavItem(2, Icons.event_note_rounded, "Planner"),
+          _buildNavItem(3, Icons.person_rounded, "Profile"),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(int index, IconData icon, String label) {
+    final isActive = _currentIndex == index;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          _currentIndex = index;
-        });
-      },
-      child: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              color: isActive ? primary : Colors.grey,
+      onTap: () => setState(() => _currentIndex = index),
+      behavior: HitTestBehavior.opaque,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutQuint,
+            padding: EdgeInsets.symmetric(horizontal: isActive ? 20 : 12, vertical: 10),
+            decoration: BoxDecoration(
+              color: isActive ? primary.withOpacity(0.08) : Colors.transparent,
+              borderRadius: BorderRadius.circular(20),
             ),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                color: isActive ? primary : Colors.grey,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-                fontFamily: "Lexend",
-              ),
-            ),
-          ],
-        ),
+            child: Icon(icon, color: isActive ? primary : textLight.withOpacity(0.35), size: 26),
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: TextStyle(color: isActive ? primary : textLight.withOpacity(0.5), fontSize: 11, fontWeight: isActive ? FontWeight.w900 : FontWeight.w700, fontFamily: "Lexend")),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, color: Colors.white, size: 22),
+      label: Text(label, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: 16, fontFamily: "Lexend")),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        elevation: 0,
       ),
     );
   }

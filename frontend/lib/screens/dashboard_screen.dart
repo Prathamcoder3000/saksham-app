@@ -64,12 +64,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
         index: _currentIndex,
         children: [
           // Tab 0: Home Dashboard
-          Stack(
-            children: [
-              // Scrollable content
-          CustomScrollView(
-            slivers: [
-              SliverAppBar(
+          RefreshIndicator(
+            onRefresh: _fetchSummary,
+            color: const Color(0xFF004AC6),
+            child: Stack(
+              children: [
+                // Scrollable content
+            CustomScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              slivers: [
+                SliverAppBar(
                 automaticallyImplyLeading: false,
                 pinned: true,
                 backgroundColor: Colors.white.withOpacity(0.9),
@@ -91,19 +95,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         onPressed: () {
                           Navigator.push(context, MaterialPageRoute(builder: (_) => const NotificationsScreen()));
                         },
-                      ),
-                      Positioned(
-                        right: 11,
-                        top: 11,
-                        child: Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: Colors.red,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          constraints: const BoxConstraints(minWidth: 12, minHeight: 12),
-                          child: const Text('3', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
-                        ),
                       ),
                     ],
                   ),
@@ -304,40 +295,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   ]),
                 ),
               ),
-            ],
-          ),
-
-          // ── FAB ──
-          Positioned(
-            bottom: 88,
-            right: 20,
-            child: Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF2563EB), Color(0xFF14B8A6)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF004AC6).withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
-              child: const Icon(Icons.add, color: Colors.white, size: 28),
+              ],
+            ),
+              ],
             ),
           ),
-          ],
-          ),
           // Tab 1: Residents
-          const ResidentListScreen(),
+          const ResidentListScreen(isTab: true),
           // Tab 2: Staff
-          const ManageStaffScreen(),
+          const ManageStaffScreen(isTab: true),
           // Tab 3: Profile
           const AdminProfileScreen(),
         ],

@@ -3,7 +3,9 @@ const {
   getMe,
   updateUserProfile,
   updatePassword,
-  getUsers
+  getUsers,
+  updateUser,
+  deleteUser
 } = require('../controllers/users');
 
 const router = express.Router();
@@ -15,6 +17,10 @@ router.use(protect);
 
 router.route('/')
   .get(authorize('Admin'), getUsers);
+
+router.route('/:id')
+  .put(authorize('Admin'), updateUser)
+  .delete(authorize('Admin'), deleteUser);
 
 router.get('/me', getMe);
 router.put('/me', updateUserProfile);

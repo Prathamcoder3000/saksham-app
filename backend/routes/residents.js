@@ -18,7 +18,7 @@ router.use(protect);
 
 router
   .route('/')
-  .get(authorize('Admin', 'Caretaker'), getResidents)
+  .get(authorize('Admin', 'Caretaker', 'Family'), getResidents)
   .post(authorize('Admin'), createResident);
 
 router
