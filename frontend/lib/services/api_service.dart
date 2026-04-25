@@ -4,20 +4,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/foundation.dart';
 
 class ApiService {
-  // 🌐 DYNAMIC BASE URL
-  // Use 10.0.2.2 for Android Emulator, localhost for iOS/Web
+  // 🌐 LIVE PRODUCTION BACKEND (Render)
   static String get baseUrl {
-    if (kIsWeb) return 'http://localhost:5000/api/v1';
-    return (defaultTargetPlatform == TargetPlatform.android) 
-      ? 'http://10.0.2.2:5000/api/v1' 
-      : 'http://localhost:5000/api/v1';
+    return 'https://saksham-app.onrender.com/api/v1';
   }
 
   static String get socketUrl {
-    if (kIsWeb) return 'http://localhost:5000';
-    return (defaultTargetPlatform == TargetPlatform.android) 
-      ? 'http://10.0.2.2:5000' 
-      : 'http://localhost:5000';
+    return 'https://saksham-app.onrender.com';
   }
 
   // Helper to get token
@@ -41,32 +34,35 @@ class ApiService {
           'Content-Type': 'application/json',
           if (token != null) 'Authorization': 'Bearer $token',
         },
-      ).timeout(const Duration(seconds: 5));
+      ).timeout(const Duration(seconds: 15));
 
       if (response.statusCode == 200) {
-        // Cache successful GET requests
         await prefs.setString('cache_$endpoint', response.body);
       }
 
       _handleResponse(response);
       return response;
     } catch (e) {
-      // Offline fallback: Return cached data if available
       final cachedData = prefs.getString('cache_$endpoint');
       if (cachedData != null) {
-        print('Offline: Returning cached data for $endpoint');
-        return http.Response(cachedData, 200, headers: {
-          'Content-Type': 'application/json',
-          'x-offline-cache': 'true',
-        });
+        return http.Response(
+          cachedData,
+          200,
+          headers: {
+            'Content-Type': 'application/json',
+            'x-offline-cache': 'true',
+          },
+        );
       }
       rethrow;
     }
   }
 
   // POST Request
-  static Future<http.Response> post(String endpoint, Map<String, dynamic> data) async {
+  static Future<http.Response> post(
+      String endpoint, Map<String, dynamic> data) async {
     final token = await getToken();
+
     final response = await http.post(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
@@ -75,13 +71,16 @@ class ApiService {
       },
       body: jsonEncode(data),
     );
+
     _handleResponse(response);
     return response;
   }
 
   // PUT Request
-  static Future<http.Response> put(String endpoint, Map<String, dynamic> data) async {
+  static Future<http.Response> put(
+      String endpoint, Map<String, dynamic> data) async {
     final token = await getToken();
+
     final response = await http.put(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
@@ -90,6 +89,7 @@ class ApiService {
       },
       body: jsonEncode(data),
     );
+
     _handleResponse(response);
     return response;
   }
@@ -97,6 +97,7 @@ class ApiService {
   // DELETE Request
   static Future<http.Response> delete(String endpoint) async {
     final token = await getToken();
+
     final response = await http.delete(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
@@ -104,13 +105,16 @@ class ApiService {
         if (token != null) 'Authorization': 'Bearer $token',
       },
     );
+
     _handleResponse(response);
     return response;
   }
 
   // PATCH Request
-  static Future<http.Response> patch(String endpoint, Map<String, dynamic> data) async {
+  static Future<http.Response> patch(
+      String endpoint, Map<String, dynamic> data) async {
     final token = await getToken();
+
     final response = await http.patch(
       Uri.parse('$baseUrl$endpoint'),
       headers: {
@@ -119,6 +123,7 @@ class ApiService {
       },
       body: jsonEncode(data),
     );
+
     _handleResponse(response);
     return response;
   }
