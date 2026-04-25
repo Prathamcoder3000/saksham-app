@@ -33,7 +33,7 @@ exports.register = async (req, res, next) => {
 // @access  Public
 exports.login = async (req, res, next) => {
   const { email, password } = req.body;
-
+  console.log("LOGIN HIT:", req.body);
   // Validate email & password
   if (!email || !password) {
     return res.status(400).json({ success: false, message: 'Please provide an email and password' });
@@ -42,6 +42,7 @@ exports.login = async (req, res, next) => {
   try {
     // Check for user
     const user = await User.findOne({ email }).select('+password');
+    console.log("USER FOUND:", user ? "YES" : "NO");
 
     if (!user) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
@@ -49,7 +50,7 @@ exports.login = async (req, res, next) => {
 
     // Check if password matches
     const isMatch = await user.matchPassword(password);
-
+    console.log("PASSWORD MATCH:", isMatch);
     if (!isMatch) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
