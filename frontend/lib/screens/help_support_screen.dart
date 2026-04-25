@@ -43,7 +43,7 @@ class HelpSupportScreen extends StatelessWidget {
             _buildContactCard(
               Icons.phone_in_talk_rounded,
               "Support Hotline",
-              "+91 98765 43210",
+              "+91 96195 93111",
               "Available 24/7 for emergencies",
               primary,
               () {}, // Real call action could be added here
@@ -52,7 +52,7 @@ class HelpSupportScreen extends StatelessWidget {
             _buildContactCard(
               Icons.alternate_email_rounded,
               "Email Support",
-              "care@saksham.com",
+              "gokuloldagehome@gmail.com",
               "Response within 2-4 hours",
               const Color(0xFF14B8A6),
               () {},
@@ -61,7 +61,7 @@ class HelpSupportScreen extends StatelessWidget {
             _buildContactCard(
               Icons.location_on_rounded,
               "Facility Address",
-              "Saksham Care, South Delhi",
+              "Prabhakar Niwas, Plot No. 47, Opp New Angel Nursery, Pandurangwadi, Near Model English School, Dombivli 421202",
               "Visit during visiting hours",
               const Color(0xFFF59E0B),
               () {},
