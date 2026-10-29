@@ -55,16 +55,28 @@ Relatives securely log into the Family Portal to monitor their loved one's real-
 ## 📸 Screenshots
 
 <div align="center">
-  <table style="width:100%">
+  <table>
     <tr>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Admin+Dashboard" alt="Admin Dashboard Interface"/><br/><sub><b>Admin Dashboard: Central Command</b></sub></td>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Caretaker+Workspace" alt="Caretaker Workspace Interface"/><br/><sub><b>Caretaker Workspace: Daily Tasks</b></sub></td>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Family+Portal" alt="Family Portal Interface"/><br/><sub><b>Family Portal: Real-time Updates</b></sub></td>
-    </tr>
-    <tr>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Medicine+Tracker" alt="Medicine Tracker Interface"/><br/><sub><b>Medicine Tracker: Dose Verification</b></sub></td>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Vitals+Graph" alt="Vitals Graph Interface"/><br/><sub><b>Vitals History: Health Trends</b></sub></td>
-      <td width="33%"><img src="https://via.placeholder.com/300x600?text=Resident+Profile" alt="Resident Profile Interface"/><br/><sub><b>Resident Profile: Digital Records</b></sub></td>
+      <td align="center" width="20%">
+        <img src="screenshots/Screenshot%202026-04-25%20161631.png" alt="Splash Screen" width="220"/><br/>
+        <sub><b>Splash Screen</b><br/>App Launch & Branding</sub>
+      </td>
+      <td align="center" width="20%">
+        <img src="screenshots/Screenshot%202026-04-25%20161641.png" alt="Role Selection" width="220"/><br/>
+        <sub><b>Role Selection</b><br/>Admin, Caretaker & Family</sub>
+      </td>
+      <td align="center" width="20%">
+        <img src="screenshots/Screenshot%202026-04-25%20161928.png" alt="Admin Dashboard" width="220"/><br/>
+        <sub><b>Admin Dashboard</b><br/>Overview & Staff Ratios</sub>
+      </td>
+      <td align="center" width="20%">
+        <img src="screenshots/Screenshot%202026-04-25%20161818.png" alt="Caretaker Dashboard" width="220"/><br/>
+        <sub><b>Caretaker Workspace</b><br/>Routines & Emergency SOS</sub>
+      </td>
+      <td align="center" width="20%">
+        <img src="screenshots/Screenshot%202026-04-25%20161854.png" alt="Family Companion" width="220"/><br/>
+        <sub><b>Family Companion</b><br/>Live Vitals & Care Tracking</sub>
+      </td>
     </tr>
   </table>
 </div>
